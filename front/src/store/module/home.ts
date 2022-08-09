@@ -12,7 +12,67 @@ export interface CustomReactPortal extends ReactPortal {
 
 export const domData = atom<CustomReactPortal[]>({
     key: "update_canvas_dom",
-    default: [],
+    default: [
+        {
+          key: 1,
+          type: Fragment,
+          isCustomComponent: true,
+          props: {},
+          children: [
+            {
+              key: 4,
+              type: "span",
+              props: {},
+              children: "Hello",
+            },
+            {
+              key: 5,
+              type: KButton,
+              isCustomComponent: true,
+              props: {},
+              children: " World",
+            },
+          ],
+        },
+        {
+          key: 2,
+          type: "span",
+          props: {},
+          children: " !!!",
+        },
+        {
+          key: 3,
+          type: "ul",
+          props: {},
+          isLoop: true,
+          children: [
+            {
+              key: 6,
+              type: "li",
+              props: { key: "a" },
+              children: 1,
+            },
+            {
+              key: 7,
+              type: "li",
+              props: { key: "b" },
+              children: 2,
+            },
+            {
+              key: 8,
+              type: "li",
+              props: { key: "c" },
+              children: 3,
+            },
+            {
+              key: 8,
+              type: "li",
+              props: { key: "d" },
+              children: 4,
+            },
+          ],
+        },
+      ],
 })
 
 export const selectData = atom<CustomReactPortal | null>({
