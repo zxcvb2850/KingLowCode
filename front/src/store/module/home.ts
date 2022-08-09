@@ -3,77 +3,19 @@ import { atom } from "recoil";
 import KButton from '../../components/KButton';
 
 export interface CustomReactPortal extends ReactPortal {
-    isCustomComponent?: boolean
-    children: (CustomReactPortal | string)[]
+    key: string | number
+    children: CustomReactPortal[] | string | number
+    isCustomComponent?: boolean // 是否是组件
     tag?: number // 标签类型 1 纯文本
+    isLoop?: boolean // 是否循环 使用key
 }
 
 export const domData = atom<CustomReactPortal[]>({
-    key: "update_dom",
-    default: [{
-        key: 1,
-        type: "div",
-        props: {},
-        children: [{
-            key: 3,
-            tag: 1,
-            type: "p",
-            props: {},
-            children: ["this is P 1"],    
-        }, {
-        key: 4,
-        type: "div",
-        props: {},
-        children: [
-            {
-                key: 5,
-                tag: 1,
-                type: "span",
-                props: {},
-                children: ["this is P 1-1"],    
-            },
-            {
-                key: 6,
-                tag: 1,
-                type: "p",
-                props: {},
-                children: ["this is P 1-2"],    
-            }   
-        ],    
-    }]
-    }, {
-        key: 2,
-        type: "div",
-        props: {},
-        children: [{
-            key: 4,
-            tag: 1,
-            type: "p",
-            props: {},
-            children: ["this is P 2"],    
-        }]
-    }],
+    key: "update_canvas_dom",
+    default: [],
 })
 
-/*
-children: [{
-            key: 2,
-            type: "p",
-            props: {},
-            children: [{
-                key: 3,
-                type: KButton,
-                props: {},
-                isCustomComponent: true,
-                children: ["KButton"],
-            },
-            {
-                key: 4,
-                type: KButton,
-                props: {},
-                isCustomComponent: true,
-                children: ["KButton"],
-            }]
-        }]
-
-*/
+export const selectData = atom<CustomReactPortal | null>({
+    key: "update_select_dom",
+    default: null,
+})

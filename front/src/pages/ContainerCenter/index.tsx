@@ -1,17 +1,17 @@
-import React, { KeyboardEvent, ReactElement } from "react";
+import React, { KeyboardEvent, ReactElement, Fragment } from "react";
 import { useRecoilState } from "recoil";
 import store from "../../store";
-import { CustomReactPortal, domData } from "../../store/module/home";
+import { CustomReactPortal } from "../../store/module/home";
 import "./index.less";
 import lodash from "lodash";
-import { getClassName, addClassName, removeClassName } from "../../utils/ClassName";
+import { addClassName, removeClassName } from "../../utils/ClassName";
 
 const ContainerCenter = () => {
   const [dom, setDom] = useRecoilState(store.home.domData);
+  const [selectData, setSelectData] = useRecoilState(store.home.selectData);
 
   // 给每个组件添加点击事件
   const addClickProps = (itemProps: any, children: CustomReactPortal) => {
-    console.log("itemProps", itemProps);
     return {
       ...itemProps,
       className: addClassName(itemProps.className, ["k-hover"]),
@@ -26,50 +26,68 @@ const ContainerCenter = () => {
   ) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log(e.target, curDom);
-    const copy = lodash.cloneDeep(curDom);
-    let p1 = lodash.cloneDeep(dom);
-    let p2 = p1;
-    let cur = null;
-    console.log("className", getClassName(curDom.props.className));
-    // while (p2 && typeof p2 !== "string" && typeof p2 !== "number") {
-    //   const { className } = p2.props;
-    //   p2.props.className = removeClassName(className, ["k-select"]);
-    //   if (p2.key === curDom.key) {
-    //     cur = p2;
-    //     p2.props.className = addClassName(className, ["k-select"]);
-    //   }
-    //   // p2 = p2.children as CustomReactPortal;
-    // }
-    // setDom(p1);
+    console.log(e.target.className, curDom);
+    let selectDom: CustomReactPortal | null = lodash.cloneDeep(curDom);
+    let copy = lodash.cloneDeep(dom);
+    const newDom = withDomData(copy, curDom.key);
+    setSelectData(selectDom);
+    setDom(newDom);
   };
 
-  const renderItemChildren = (dom: CustomReactPortal[]): ReactElement[] | null => {
-    if(!dom) return null
-    console.log("dom", dom)
-    if (typeof dom === "string") return dom; 
-    const doms: ReactElement[] = [];
+  const withDomData = (
+    dom: CustomReactPortal[],
+    key: string | number
+  ): CustomReactPortal[] => {
+    if (!dom) return [];
     const len = dom.length;
-    for (let i = 0; i< len; i++) {
+    for (let i = 0; i < len; i++) {
       const item = dom[i];
-      if (item?.tag === 1) {
-        doms.push(React.createElement(item.type, addClickProps({key: item.key, ...item.props}, item), item.children.join()));
-      } else {
-        // @ts-ignore
-        doms.push(React.createElement(item.type, addClickProps({key: item.key, ...item.props}, item), renderItemChildren(item.children)));
+      item.props.className = removeClassName(item.props.className, [
+        "k-select",
+      ]);
+      if (item.key === key) {
+        item.props.className = addClassName(item.props.className, ["k-select"]);
+      }
+      const children = item.children;
+      if (children && lodash.isArray(children)) {
+        withDomData(children, key);
       }
     }
 
-    return doms;
-  }
+    return dom;
+  };
+
+  const renderItemChildren = (
+    dom: CustomReactPortal[] | string | number,
+    isLoop = false
+  ): ReactElement | string | number | null => {
+    if (!dom) return null;
+    if (typeof dom === "string" || typeof dom === "number") {
+      return dom;
+    }
+    const len = dom.length;
+    const doms: ReactElement[] = [];
+    for (let i = 0; i < len; i++) {
+      const item = dom[i];
+      let props = item.props;
+      if (isLoop && !item.props?.key) {
+        props.key = item.key;
+      }
+      doms.push(
+        React.createElement(
+          item.type,
+          addClickProps(props, item),
+          renderItemChildren(item.children, item.isLoop)
+        )
+      );
+    }
+    return React.createElement(Fragment, null, ...(isLoop ? [doms] : doms));
+  };
 
   return React.createElement(
     "div",
     { className: "k-container-center" },
-    // childrenContent(dom)
     renderItemChildren(dom)
-    // React.createElement(dom[0].type, dom[0].props, dom[0].children),
-    // React.createElement(dom[1].type, dom[1].props, dom[1].children)
   );
 };
 
