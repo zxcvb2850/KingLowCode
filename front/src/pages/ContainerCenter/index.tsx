@@ -1,20 +1,22 @@
-import React, { KeyboardEvent, ReactElement, Fragment } from "react";
-import { useRecoilState } from "recoil";
+import React, { KeyboardEvent, ReactElement, Fragment, useEffect } from "react";
+import { useRecoilState, useRecoilValue } from "recoil";
 import store from "../../store";
 import { CustomReactPortal } from "../../store/module/home";
 import "./index.less";
 import lodash from "lodash";
-import { expandTree } from "../../utils/ComponentsTree";
 
 const ContainerCenter = () => {
-  const [dom, setDom] = useRecoilState(store.home.expandDomData);
+  const [dom, setDom] = useRecoilState(store.home.selectorDomData);
+  const expandDom = useRecoilValue(store.home.expandDomData);
   const [selectData, setSelectData] = useRecoilState(store.home.selectData);
+
+  useEffect(() => {
+    console.log("expandDom", expandDom);
+  }, [expandDom]);
 
   // 添加自定义 props 属性
   const addClickProps = (itemProps: any, children: CustomReactPortal) => {
-    return {
-      ...itemProps,
-    };
+    return {...itemProps};
   };
 
   // 获取 DOM 当前点击或父级可点击的DOM
@@ -37,25 +39,25 @@ const ContainerCenter = () => {
     if (!!componentHTML) {
       // 获取选中的组件数据
       const curComId = componentHTML.getAttribute("data-component-key");
-      let curSelectData: CustomReactPortal | null = null;
-      if (curComId) {
-        curSelectData = findSelectDom(curComId);
-        console.log("curSelectData", curSelectData);
-      }
       // 添加选中效果
       let list = document.querySelectorAll('[data-component-active="true"]');
       list.forEach((el) => {
         el.setAttribute("data-component-active", "");
       });
-      componentHTML.setAttribute("data-component-active", "true");
 
+      let curSelectData: CustomReactPortal | null = null;
+      if (curComId && curComId !== selectData?.key) {
+        componentHTML.setAttribute("data-component-active", "true");
+
+        curSelectData = findSelectDom(curComId);
+      }
       setSelectData(curSelectData);
     }
   };
 
   // 查找当前选中的组件的数据结构
   const findSelectDom = (id: string) => {
-    const find = expandTree(dom).find((n) => n.key == id);
+    const find = expandDom.find((n) => n.key == id);
     return find || null;
   };
 

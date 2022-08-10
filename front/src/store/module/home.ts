@@ -1,7 +1,6 @@
-import { Fragment, ReactPortal } from 'react';
+import { ReactPortal } from 'react';
 import { atom, selector } from "recoil";
-import Utils from "../../utils/Utils";
-import KingUi from '../../components/Template/KingUi';
+import { expandTree } from '../../utils/ComponentsTree';
 
 export interface CustomReactPortal extends ReactPortal {
     key: string | number
@@ -11,89 +10,26 @@ export interface CustomReactPortal extends ReactPortal {
     isLoop?: boolean // 是否循环 使用key
 }
 
+// 数据树结构
 export const domData = atom<CustomReactPortal[]>({
-    key: "update_canvas_dom",
-    default: [
-        {
-          key: Utils.uuid(),
-          type: Fragment,
-          tag: "Fragment",
-          isCustomComponent: true,
-          props: {},
-          children: [
-            {
-                key: Utils.uuid(),
-              type: KingUi.KAlert,
-              tag: "KAlert",
-              isCustomComponent: true,
-              props: {},
-              children: "Hello",
-            },
-            {
-                key: Utils.uuid(),
-              type: KingUi.KButton,
-              tag: "KButton",
-              isCustomComponent: true,
-              props: {},
-              children: " World",
-            },
-            {
-                key: Utils.uuid(),
-              type: KingUi.KButton,
-              tag: "KButton",
-              isCustomComponent: true,
-              props: {},
-              children: " World",
-            },
-          ],
-        },
-        {
-            key: Utils.uuid(),
-          type: "span",
-          props: {"data-component-active": "false"},
-          children: " !!!",
-        },
-        {
-            key: Utils.uuid(),
-          type: "ul",
-          props: {"data-component-active": "false"},
-          isLoop: true,
-          children: [
-            {
-                key: Utils.uuid(),
-              type: "li",
-              props: { key: "a", "data-component-active": "false" },
-              children: 1,
-            },
-            {
-                key: Utils.uuid(),
-              type: "li",
-              props: { key: "b", "data-component-active": "false" },
-              children: 2,
-            },
-            {
-                key: Utils.uuid(),
-              type: "li",
-              props: { key: "c", "data-component-active": "false" },
-              children: 3,
-            },
-            {
-                key: Utils.uuid(),
-              type: "li",
-              props: { key: "d", "data-component-active": "false" },
-              children: 4,
-            },
-          ],
-        },
-      ],
+    key: "domData",
+    default: [],
 })
 
-export const expandDomData = selector({
-  key: "expandDomData",
+// 修改数据树的同时需要修改其他的store
+export const selectorDomData = selector({
+  key: "selectorDomData",
   get: ({get}) => get(domData),
   set: ({set}, newValue) =>{
+    set(expandDomData, expandTree(newValue as CustomReactPortal[]));
     return set(domData, newValue);
   }
+})
+
+// 平铺数据，方便查询数据
+export const expandDomData = atom<CustomReactPortal[]>({
+  key: "expandDomData",
+  default: [],
 })
 
 export const selectData = atom<CustomReactPortal | null>({
