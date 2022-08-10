@@ -1,5 +1,5 @@
 import { Fragment, ReactPortal } from 'react';
-import { atom } from "recoil";
+import { atom, selector } from "recoil";
 import Utils from "../../utils/Utils";
 import KingUi from '../../components/Template/KingUi';
 
@@ -86,6 +86,14 @@ export const domData = atom<CustomReactPortal[]>({
           ],
         },
       ],
+})
+
+export const expandDomData = selector({
+  key: "expandDomData",
+  get: ({get}) => get(domData),
+  set: ({set}, newValue) =>{
+    return set(domData, newValue);
+  }
 })
 
 export const selectData = atom<CustomReactPortal | null>({

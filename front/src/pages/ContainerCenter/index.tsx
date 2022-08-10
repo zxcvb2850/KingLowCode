@@ -7,16 +7,17 @@ import lodash from "lodash";
 import { expandTree } from "../../utils/ComponentsTree";
 
 const ContainerCenter = () => {
-  const [dom, setDom] = useRecoilState(store.home.domData);
+  const [dom, setDom] = useRecoilState(store.home.expandDomData);
   const [selectData, setSelectData] = useRecoilState(store.home.selectData);
 
-  // 给每个组件添加点击事件
+  // 添加自定义 props 属性
   const addClickProps = (itemProps: any, children: CustomReactPortal) => {
     return {
       ...itemProps,
     };
   };
 
+  // 获取 DOM 当前点击或父级可点击的DOM
   const getComponentNode = (node: HTMLElement): HTMLElement | null => {
     if (node && node.getAttribute("data-component-active") !== null)
       return node;
@@ -27,11 +28,11 @@ const ContainerCenter = () => {
     }
   };
 
+  // 点击 DOM
   const clickContainerCenter = (e: KeyboardEvent<HTMLElement>) => {
     e.preventDefault();
     const target = e.target;
     let componentHTML: HTMLElement | null = getComponentNode(target);
-    console.log("componentHTML", componentHTML);
 
     if (!!componentHTML) {
       // 获取选中的组件数据
@@ -58,6 +59,7 @@ const ContainerCenter = () => {
     return find || null;
   };
 
+  // 渲染组件
   const renderItemChildren = (
     dom: CustomReactPortal[] | string | number,
     isLoop = false
