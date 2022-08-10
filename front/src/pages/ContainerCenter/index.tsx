@@ -4,7 +4,6 @@ import store from "../../store";
 import { CustomReactPortal } from "../../store/module/home";
 import "./index.less";
 import lodash from "lodash";
-import { addClassName, removeClassName } from "../../utils/ClassName";
 import { expandTree } from "../../utils/ComponentsTree";
 
 const ContainerCenter = () => {
@@ -16,29 +15,6 @@ const ContainerCenter = () => {
     return {
       ...itemProps,
     };
-  };
-
-  const withDomData = (
-    dom: CustomReactPortal[],
-    key: string | number
-  ): CustomReactPortal[] => {
-    if (!dom) return [];
-    const len = dom.length;
-    for (let i = 0; i < len; i++) {
-      const item = dom[i];
-      item.props.className = removeClassName(item.props.className, [
-        "k-select",
-      ]);
-      if (item.tag !== "Fragment" && item.key === key) {
-        item.props.className = addClassName(item.props.className, ["k-select"]);
-      }
-      const children = item.children;
-      if (children && lodash.isArray(children)) {
-        withDomData(children, key);
-      }
-    }
-
-    return dom;
   };
 
   const getComponentNode = (node: HTMLElement): HTMLElement | null => {
@@ -63,6 +39,7 @@ const ContainerCenter = () => {
       let curSelectData: CustomReactPortal | null = null;
       if (curComId) {
         curSelectData = findSelectDom(curComId);
+        console.log("curSelectData", curSelectData);
       }
       // 添加选中效果
       let list = document.querySelectorAll('[data-component-active="true"]');

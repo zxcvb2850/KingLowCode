@@ -1,6 +1,6 @@
 import { Fragment, ReactPortal } from 'react';
 import { atom } from "recoil";
-import Utils from '../../utils/Utils';
+import Utils from "../../utils/Utils";
 import KingUi from '../../components/Template/KingUi';
 
 export interface CustomReactPortal extends ReactPortal {
