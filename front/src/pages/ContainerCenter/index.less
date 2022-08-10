@@ -4,14 +4,24 @@
     background-color: aliceblue;
     user-select: none;
 
-    .k-hover {
-        cursor: pointer;
-        &:hover {
-            box-shadow: inset 0px 0px 0px 1px #ccc !important;
-        }
+    [data-component-active="true"] {
+        box-shadow: none;
+        outline:none;
+    }
+    [data-component-active]:hover {
+        box-shadow: none;
+    }
+    [data-component-active]:focus {
+        box-shadow: none;
     }
 
-    .k-select {
-        box-shadow: inset 0px 0px 0px 1px #ccc !important;
+    [data-component-active="true"] {
+        box-shadow: inset 0px 0px 0px 1px pink!important;
+    }
+    [data-component-active]:hover {
+        box-shadow: inset 0px 0px 0px 1px pink!important;
+    }
+    [data-component-active]:focus {
+        box-shadow: inset 0px 0px 0px 1px pink!important;
     }
 }

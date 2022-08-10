@@ -1,12 +1,13 @@
 import { Fragment, ReactPortal } from 'react';
 import { atom } from "recoil";
-import KButton from '../../components/KButton';
+import Utils from '../../utils/Utils';
+import KingUi from '../../components/Template/KingUi';
 
 export interface CustomReactPortal extends ReactPortal {
     key: string | number
     children: CustomReactPortal[] | string | number
     isCustomComponent?: boolean // 是否是组件
-    tag?: number // 标签类型 1 纯文本
+    tag?: string // 标签类型 主要用于组件
     isLoop?: boolean // 是否循环 使用key
 }
 
@@ -14,20 +15,32 @@ export const domData = atom<CustomReactPortal[]>({
     key: "update_canvas_dom",
     default: [
         {
-          key: 1,
+          key: Utils.uuid(),
           type: Fragment,
+          tag: "Fragment",
           isCustomComponent: true,
           props: {},
           children: [
             {
-              key: 4,
-              type: "span",
+                key: Utils.uuid(),
+              type: KingUi.KAlert,
+              tag: "KAlert",
+              isCustomComponent: true,
               props: {},
               children: "Hello",
             },
             {
-              key: 5,
-              type: KButton,
+                key: Utils.uuid(),
+              type: KingUi.KButton,
+              tag: "KButton",
+              isCustomComponent: true,
+              props: {},
+              children: " World",
+            },
+            {
+                key: Utils.uuid(),
+              type: KingUi.KButton,
+              tag: "KButton",
               isCustomComponent: true,
               props: {},
               children: " World",
@@ -35,39 +48,39 @@ export const domData = atom<CustomReactPortal[]>({
           ],
         },
         {
-          key: 2,
+            key: Utils.uuid(),
           type: "span",
-          props: {},
+          props: {"data-component-active": "false"},
           children: " !!!",
         },
         {
-          key: 3,
+            key: Utils.uuid(),
           type: "ul",
-          props: {},
+          props: {"data-component-active": "false"},
           isLoop: true,
           children: [
             {
-              key: 6,
+                key: Utils.uuid(),
               type: "li",
-              props: { key: "a" },
+              props: { key: "a", "data-component-active": "false" },
               children: 1,
             },
             {
-              key: 7,
+                key: Utils.uuid(),
               type: "li",
-              props: { key: "b" },
+              props: { key: "b", "data-component-active": "false" },
               children: 2,
             },
             {
-              key: 8,
+                key: Utils.uuid(),
               type: "li",
-              props: { key: "c" },
+              props: { key: "c", "data-component-active": "false" },
               children: 3,
             },
             {
-              key: 8,
+                key: Utils.uuid(),
               type: "li",
-              props: { key: "d" },
+              props: { key: "d", "data-component-active": "false" },
               children: 4,
             },
           ],

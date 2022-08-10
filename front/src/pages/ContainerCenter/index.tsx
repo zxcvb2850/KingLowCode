@@ -5,6 +5,7 @@ import { CustomReactPortal } from "../../store/module/home";
 import "./index.less";
 import lodash from "lodash";
 import { addClassName, removeClassName } from "../../utils/ClassName";
+import { expandTree } from "../../utils/ComponentsTree";
 
 const ContainerCenter = () => {
   const [dom, setDom] = useRecoilState(store.home.domData);
@@ -14,24 +15,7 @@ const ContainerCenter = () => {
   const addClickProps = (itemProps: any, children: CustomReactPortal) => {
     return {
       ...itemProps,
-      className: addClassName(itemProps.className, ["k-hover"]),
-      onClick: (e: KeyboardEvent<HTMLElement>) => handleClick(e, children),
     };
-  };
-
-  // 处理组件点击选中
-  const handleClick = (
-    e: KeyboardEvent<HTMLElement>,
-    curDom: CustomReactPortal
-  ) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log(e.target.className, curDom);
-    let selectDom: CustomReactPortal | null = lodash.cloneDeep(curDom);
-    let copy = lodash.cloneDeep(dom);
-    const newDom = withDomData(copy, curDom.key);
-    setSelectData(selectDom);
-    setDom(newDom);
   };
 
   const withDomData = (
@@ -45,7 +29,7 @@ const ContainerCenter = () => {
       item.props.className = removeClassName(item.props.className, [
         "k-select",
       ]);
-      if (item.key === key) {
+      if (item.tag !== "Fragment" && item.key === key) {
         item.props.className = addClassName(item.props.className, ["k-select"]);
       }
       const children = item.children;
@@ -55,6 +39,46 @@ const ContainerCenter = () => {
     }
 
     return dom;
+  };
+
+  const getComponentNode = (node: HTMLElement): HTMLElement | null => {
+    if (node && node.getAttribute("data-component-active") !== null)
+      return node;
+    else {
+      if (node.parentElement) return getComponentNode(node.parentElement);
+
+      return null;
+    }
+  };
+
+  const clickContainerCenter = (e: KeyboardEvent<HTMLElement>) => {
+    e.preventDefault();
+    const target = e.target;
+    let componentHTML: HTMLElement | null = getComponentNode(target);
+    console.log("componentHTML", componentHTML);
+
+    if (!!componentHTML) {
+      // 获取选中的组件数据
+      const curComId = componentHTML.getAttribute("data-component-key");
+      let curSelectData: CustomReactPortal | null = null;
+      if (curComId) {
+        curSelectData = findSelectDom(curComId);
+      }
+      // 添加选中效果
+      let list = document.querySelectorAll('[data-component-active="true"]');
+      list.forEach((el) => {
+        el.setAttribute("data-component-active", "");
+      });
+      componentHTML.setAttribute("data-component-active", "true");
+
+      setSelectData(curSelectData);
+    }
+  };
+
+  // 查找当前选中的组件的数据结构
+  const findSelectDom = (id: string) => {
+    const find = expandTree(dom).find((n) => n.key == id);
+    return find || null;
   };
 
   const renderItemChildren = (
@@ -68,15 +92,13 @@ const ContainerCenter = () => {
     const len = dom.length;
     const doms: ReactElement[] = [];
     for (let i = 0; i < len; i++) {
-      const item = dom[i];
-      let props = item.props;
-      if (isLoop && !item.props?.key) {
-        props.key = item.key;
-      }
+      const item = lodash.cloneDeep(dom[i]);
+      item.props["data-component-key"] = `${item.key}`;
+
       doms.push(
         React.createElement(
           item.type,
-          addClickProps(props, item),
+          item?.tag === "Fragment" ? null : addClickProps(item.props, item),
           renderItemChildren(item.children, item.isLoop)
         )
       );
@@ -86,7 +108,7 @@ const ContainerCenter = () => {
 
   return React.createElement(
     "div",
-    { className: "k-container-center" },
+    { className: "k-container-center", onClick: clickContainerCenter },
     renderItemChildren(dom)
   );
 };
