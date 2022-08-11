@@ -16,7 +16,7 @@ const ContainerCenter = () => {
 
   // 添加自定义 props 属性
   const addClickProps = (itemProps: any, children: CustomReactPortal) => {
-    return {...itemProps};
+    return { ...itemProps };
   };
 
   // 获取 DOM 当前点击或父级可点击的DOM
@@ -35,6 +35,7 @@ const ContainerCenter = () => {
     e.preventDefault();
     const target = e.target;
     let componentHTML: HTMLElement | null = getComponentNode(target);
+    console.log("componentHTML", componentHTML);
 
     if (!!componentHTML) {
       // 获取选中的组件数据
