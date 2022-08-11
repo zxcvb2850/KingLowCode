@@ -60,6 +60,26 @@ const ContainerRight = () => {
     setSelectorDomData(copySelectorDom);
   };
 
+  // 插入节点
+  const insertSelectorDom = () => {}
+
+  // 删除节点
+  const deleteSelectorDom = () => {}
+
+  // 查询节点
+  const searchSelectorDom = (key: string): CustomReactPortal | null => {
+    return null;
+  }
+
+  // 查询父节点
+  const searchParentSelectorDom = () => {}
+
+  // 修改节点
+  const editParentSelectorDom = () => {}
+
+  // 查询兄弟节点
+  const searchBrotherSelector = () => {}
+
   return (
     <div className="k-container-right">
       right
