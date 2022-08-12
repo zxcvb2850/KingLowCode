@@ -1,4 +1,4 @@
-import { ReactNode, useLayoutEffect, useRef } from "react";
+import { ReactNode, useRef } from "react";
 import useSetAttribute from "../../../../hooks/useSetAttribute";
 import "./index.less";
 

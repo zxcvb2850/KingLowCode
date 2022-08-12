@@ -3,7 +3,7 @@ import { atom, selector } from "recoil";
 import { expandTree } from '../../utils/ComponentsTree';
 
 export interface CustomReactPortal extends ReactPortal {
-    key: string | number
+    key: string
     children: CustomReactPortal[] | string | number
     isCustomComponent?: boolean // 是否是组件
     tag?: string // 标签类型 主要用于组件

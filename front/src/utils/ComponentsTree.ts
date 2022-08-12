@@ -7,6 +7,7 @@ import { CustomReactPortal } from '../store/module/home';
 // 展开 DOM 树方便搜索和查找
 export const expandTree = (dom: CustomReactPortal[]): CustomReactPortal[] => {
     const expand:CustomReactPortal[] = [];
+    console.log("dom", dom);
 
     function expandArray (dom:CustomReactPortal[]) {
         const len = dom.length;

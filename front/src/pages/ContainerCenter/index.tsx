@@ -75,8 +75,11 @@ const ContainerCenter = () => {
     const doms: ReactElement[] = [];
     for (let i = 0; i < len; i++) {
       const item = lodash.cloneDeep(dom[i]);
+      item.props["key"] = `${item.key}`;
       item.props["data-component-key"] = `${item.key}`;
+      item.props["data-component-active"] = ``;
 
+      console.log("item.props", item.props);
       doms.push(
         React.createElement(
           item.type,

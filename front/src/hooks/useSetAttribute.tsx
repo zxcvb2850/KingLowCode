@@ -3,7 +3,7 @@ import { useLayoutEffect, RefObject } from "react";
 const useSetAttribute = (ele: RefObject<HTMLElement>, props: any) => {
   useLayoutEffect(() => {
     if (ele.current) {
-      ele.current.setAttribute("data-component-active", "false");
+      ele.current.setAttribute("data-component-active", "");
     }
   }, []);
 
