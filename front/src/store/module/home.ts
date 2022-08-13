@@ -4,11 +4,13 @@ import { expandTree } from '../../utils/ComponentsTree';
 
 export interface CustomReactPortal extends ReactPortal {
     key: string
-    children: CustomReactPortal[] | string | number
+    children: CustomReactPortalChildren
     isCustomComponent?: boolean // 是否是组件
     tag?: string // 标签类型 主要用于组件
     isLoop?: boolean // 是否循环 使用key
 }
+
+export type CustomReactPortalChildren = CustomReactPortal[] | string | number;
 
 // 数据树结构
 export const domData = atom<CustomReactPortal[]>({

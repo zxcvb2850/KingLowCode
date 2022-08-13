@@ -3,7 +3,7 @@ import { useRecoilState, useRecoilValue } from "recoil";
 import loadsh from "lodash";
 import store from "../../store";
 import "./index.less";
-import { CustomReactPortal } from "../../store/module/home";
+import { CustomReactPortal, CustomReactPortalChildren } from "../../store/module/home";
 import Utils from "../../utils/Utils";
 import KingUi from "../../components/Template/KingUi";
 
@@ -11,7 +11,9 @@ const ContainerRight = () => {
   const [selectorDomData, setSelectorDomData] = useRecoilState(
     store.home.selectorDomData
   );
-  const selectData = useRecoilValue(store.home.selectData);
+  const [selectData, setSelectData] = useRecoilState(store.home.selectData);
+  const expandDomData = useRecoilValue(store.home.expandDomData);
+  
   const [value, setValue] = useState<string>("");
   const [dom, setDom] = useState<CustomReactPortal[]>([
     {
@@ -44,6 +46,23 @@ const ContainerRight = () => {
           isCustomComponent: true,
           props: {},
           children: " World",
+        },
+        {
+          key: "0a74b145-96a2",
+          type: Fragment,
+          tag: "Fragment",
+          isCustomComponent: true,
+          props: {},
+          children: [
+            {
+              key: "0a74b145-96a3",
+              type: "span",
+              tag: "span",
+              isCustomComponent: true,
+              props: {},
+              children: "xxxxx"
+            }
+          ],
         },
       ],
     },
@@ -129,6 +148,13 @@ const ContainerRight = () => {
     [selectData]
   );
 
+  // 是否有子节点
+  const isChildrens = (dom: CustomReactPortal): boolean => {
+    if (dom == null) return false;
+    if (dom.children && Array.isArray(dom.children)) return true;
+    return false;
+  };
+
   const updateSelectorDom = (val: string) => {
     if (!selectData) return;
     const copySelectorDom = loadsh.cloneDeep(selectorDomData);
@@ -156,6 +182,15 @@ const ContainerRight = () => {
     setSelectorDomData(copySelectorDom);
   };
 
+  const isDomExist = (key: string| null): CustomReactPortal| null => {
+    if (!key) return null;
+    const find = expandDomData.find(n => n.key === key);
+    if (!find) {
+      console.log("%c 节点不存在，请检查该节点的准确性", "color:red;");
+    }
+    return find || null;
+  }
+
   /**
    * 插入节点
    * @param key 需要插入节点位置的key
@@ -170,20 +205,17 @@ const ContainerRight = () => {
   ): CustomReactPortal[] => {
     doms = doms || selectorDomData;
     const copyDom: CustomReactPortal[] = loadsh.cloneDeep(doms);
-    if (!key) {
-      copyDom.push(iDom);
-    } else {
-      const len = copyDom.length;
-      for (let i = 0; i < len; i++) {
-        const item = copyDom[i];
-        if (item.key === key && Array.isArray(item.children)) {
-          const isExist = item.children.some((n) => n.key === iDom.key);
+    if (!isDomExist(key)) {
+      return copyDom;
+    }
 
-          if (!isExist) item.children.push(iDom);
-          else console.log("%c 节点存在，请检查该节点的准确性", "color:red;");
-        } else if (Array.isArray(item.children)) {
-          insertSelectorDom(key, iDom, item.children);
-        }
+    const len = copyDom.length;
+    for (let i = 0; i < len; i++) {
+      const item = copyDom[i];
+      if (item.key === key && Array.isArray(item.children)) {
+        item.children.push(iDom);
+      } else if (Array.isArray(item.children)) {
+        insertSelectorDom(key, iDom, item.children);
       }
     }
     return copyDom;
@@ -196,13 +228,25 @@ const ContainerRight = () => {
   ): CustomReactPortal[] => {
     doms = doms || selectorDomData;
     const copyDom: CustomReactPortal[] = loadsh.cloneDeep(doms);
-    if (!key) return doms;
-
-    const len = copyDom.length;
-    for (let i = 0; i < len; i++) {
-      const item = copyDom[i];
+    if (!isDomExist(key)) {
+      return copyDom;
     }
-    return [];
+
+    if (!loadsh.isArray(copyDom)) return copyDom;
+      let index = copyDom.findIndex(n => n.key === key);
+      if (index > -1) {
+        copyDom.splice(index, 1);
+        return copyDom;
+      } else {
+        const len = copyDom.length;
+        for (let i = 0; i< len; i++) {
+          const item = copyDom[i];
+          if (loadsh.isArray(item.children)) {
+            item.children = deleteSelectorDom(key, item.children);
+          }
+        }
+      }
+    return copyDom;
   };
 
   // 查询节点
@@ -219,14 +263,13 @@ const ContainerRight = () => {
   // 查询兄弟节点
   const searchBrotherSelector = () => {};
 
+  // 增加节点
   const handleInsertDom = () => {
-    console.log("-- 末尾插入节点 --");
-
-    const parentKey = dom[2].key;
-    // const parentKey = "a5f06c48-0e6e";
-    // const parentKey = "3aeb8223-039e";
-    // const parentKey = null;
-    /* const targetDom: CustomReactPortal = {
+    console.log("-- 插入某个节点 --");
+    if (!selectData) return;
+    const parentKey = selectData.key;
+    console.log("parentKey", parentKey);
+    const targetDom: CustomReactPortal = {
       key: Utils.uuid(),
       type: KingUi.KButton,
       tag: "KButton",
@@ -234,17 +277,26 @@ const ContainerRight = () => {
       props: {},
       children: "我是新插入的节点",
     };
-    const newDom = insertSelectorDom(parentKey, targetDom, dom);*/
-    const newDom = deleteSelectorDom(parentKey, dom);
+    const newDom = insertSelectorDom(parentKey, targetDom);
     console.log("newDom", newDom);
 
-    // setSelectorDomData(newDom);
+    setSelectorDomData(newDom);
   };
+  // 删除节点
+  const handleDeleteDom = ()=>{
+    console.log("-- 删除某个节点 --");
+    if (!selectData) return;
+    const parentKey = selectData.key;
+    const newDom = deleteSelectorDom(parentKey);
+    setSelectorDomData(newDom);
+    setSelectData(null);
+  }
 
   return (
     <div className="k-container-right">
       right
       <KingUi.KButton onClick={handleInsertDom}>插入节点</KingUi.KButton>
+      <KingUi.KButton onClick={handleDeleteDom}>删除节点</KingUi.KButton>
       {selectData?.key}
       {selectData ? (
         Utils.isDomBase(selectData) ? (
