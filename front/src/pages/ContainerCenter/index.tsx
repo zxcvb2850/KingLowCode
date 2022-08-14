@@ -79,7 +79,6 @@ const ContainerCenter = () => {
       item.props["data-component-key"] = `${item.key}`;
       item.props["data-component-active"] = ``;
 
-      console.log("item.props", item.props);
       doms.push(
         React.createElement(
           item.type,

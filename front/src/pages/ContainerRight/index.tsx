@@ -164,7 +164,6 @@ const ContainerRight = () => {
       const len = doms.length;
       for (let i = 0; i < len; i++) {
         const item = doms[i];
-        console.log("item", item);
         if (item.key === selectData.key) {
           item.children = val;
           break;
@@ -192,7 +191,7 @@ const ContainerRight = () => {
   }
 
   /**
-   * 插入节点
+   * 插入子节点
    * @param key 需要插入节点位置的key
    * @param iDom 需要插入的节点数据
    * @param doms 当前所有节点数据
@@ -205,38 +204,84 @@ const ContainerRight = () => {
   ): CustomReactPortal[] => {
     doms = doms || selectorDomData;
     const copyDom: CustomReactPortal[] = loadsh.cloneDeep(doms);
-    if (!isDomExist(key)) {
-      return copyDom;
-    }
 
-    const len = copyDom.length;
-    for (let i = 0; i < len; i++) {
-      const item = copyDom[i];
-      if (item.key === key && Array.isArray(item.children)) {
-        item.children.push(iDom);
-      } else if (Array.isArray(item.children)) {
-        insertSelectorDom(key, iDom, item.children);
+    const find = isDomExist(key);
+    const isChildrenIsBase = Utils.isDomBase(find);
+    if (isChildrenIsBase) {
+      console.log("%c 该节点不允许插入子节点，请嵌套插入子节点", "color: red");
+    } else {
+      // 插入顶层的子组件中
+      if (key === null){
+        copyDom.push(iDom);
+      } else {
+        if (!find) {
+          return copyDom;
+        }
+
+        const len = copyDom.length;
+        for (let i = 0; i < len; i++) {
+          const item = copyDom[i];
+          if (item.key === key && Array.isArray(item.children)) {
+            item.children.push(iDom);
+          } else if (Array.isArray(item.children)) {
+            insertSelectorDom(key, iDom, item.children);
+          }
+        }
       }
     }
+    
     return copyDom;
   };
 
-  // 删除节点
+  // 插入兄弟节点
+  const insertBrotherSelectorDom = (key: string | null, iDom: CustomReactPortal, doms: CustomReactPortal[] | null, isPrev = false):CustomReactPortal[] => {
+    doms = doms || selectorDomData;
+    const copyDom: CustomReactPortal[] = loadsh.cloneDeep(doms);
+
+    const find = isDomExist(key);
+    console.log("find", find, doms);
+
+    if (find) {
+      if (!loadsh.isArray(copyDom)) return copyDom;
+      let index = copyDom.findIndex(n => n.key === key);
+      console.log("index", index);
+      if (index > -1) {
+        index = isPrev ? index : index + 1;
+        copyDom.splice(index, 0, iDom);
+      } else {
+        const len = copyDom.length;
+        for (let i = 0; i< len; i++) {
+          const item = copyDom[i];
+          if (loadsh.isArray(item.children)) {
+            item.children = insertBrotherSelectorDom(key, iDom, item.children, isPrev);
+          }
+        }
+      }
+    }
+
+    return copyDom;
+  }
+
+  /**
+   * 删除节点
+   * @param key 需要删除节点位置的key
+   * @param doms 当前所有节点数据
+   * @returns 当前节点删除后的数据
+   */
   const deleteSelectorDom = (
     key: string | null,
     doms?: CustomReactPortal[]
   ): CustomReactPortal[] => {
     doms = doms || selectorDomData;
     const copyDom: CustomReactPortal[] = loadsh.cloneDeep(doms);
-    if (!isDomExist(key)) {
-      return copyDom;
-    }
+    
+    const find = isDomExist(key);
 
-    if (!loadsh.isArray(copyDom)) return copyDom;
+    if (find) {
+      if (!loadsh.isArray(copyDom)) return copyDom;
       let index = copyDom.findIndex(n => n.key === key);
       if (index > -1) {
         copyDom.splice(index, 1);
-        return copyDom;
       } else {
         const len = copyDom.length;
         for (let i = 0; i< len; i++) {
@@ -246,6 +291,8 @@ const ContainerRight = () => {
           }
         }
       }
+    }
+
     return copyDom;
   };
 
@@ -263,11 +310,10 @@ const ContainerRight = () => {
   // 查询兄弟节点
   const searchBrotherSelector = () => {};
 
-  // 增加节点
+  // 按钮 - 插入节点
   const handleInsertDom = () => {
     console.log("-- 插入某个节点 --");
-    if (!selectData) return;
-    const parentKey = selectData.key;
+    const parentKey = selectData?.key || null;
     console.log("parentKey", parentKey);
     const targetDom: CustomReactPortal = {
       key: Utils.uuid(),
@@ -282,7 +328,25 @@ const ContainerRight = () => {
 
     setSelectorDomData(newDom);
   };
-  // 删除节点
+  // 按钮 - 插入兄弟节点，当前节点之上或当前节点之下
+  const handleInsertBrotherDom = () => {
+    console.log("-- 插入兄弟节点 --");
+    const brotherKey = selectData?.key || null;
+    console.log("brotherKey", brotherKey);
+    const targetDom: CustomReactPortal = {
+      key: Utils.uuid(),
+      type: KingUi.KButton,
+      tag: "KButton",
+      isCustomComponent: true,
+      props: {},
+      children: "我是新插入的兄弟节点",
+    };
+
+    const newDom = insertBrotherSelectorDom(brotherKey, targetDom, dom, false);
+    console.log(newDom);
+    setSelectorDomData(newDom);
+  }
+  // 按钮 - 删除节点
   const handleDeleteDom = ()=>{
     console.log("-- 删除某个节点 --");
     if (!selectData) return;
@@ -296,7 +360,9 @@ const ContainerRight = () => {
     <div className="k-container-right">
       right
       <KingUi.KButton onClick={handleInsertDom}>插入节点</KingUi.KButton>
+      <KingUi.KButton onClick={handleInsertBrotherDom}>插入兄弟节点</KingUi.KButton>
       <KingUi.KButton onClick={handleDeleteDom}>删除节点</KingUi.KButton>
+      
       {selectData?.key}
       {selectData ? (
         Utils.isDomBase(selectData) ? (
