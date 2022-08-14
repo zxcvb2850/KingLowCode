@@ -238,22 +238,30 @@ const ContainerRight = () => {
     doms = doms || selectorDomData;
     const copyDom: CustomReactPortal[] = loadsh.cloneDeep(doms);
 
-    const find = isDomExist(key);
-    console.log("find", find, doms);
-
-    if (find) {
-      if (!loadsh.isArray(copyDom)) return copyDom;
-      let index = copyDom.findIndex(n => n.key === key);
-      console.log("index", index);
-      if (index > -1) {
-        index = isPrev ? index : index + 1;
-        copyDom.splice(index, 0, iDom);
+    if (!key) {
+      if (isPrev){
+        copyDom.unshift(iDom);
       } else {
-        const len = copyDom.length;
-        for (let i = 0; i< len; i++) {
-          const item = copyDom[i];
-          if (loadsh.isArray(item.children)) {
-            item.children = insertBrotherSelectorDom(key, iDom, item.children, isPrev);
+        copyDom.push(iDom);
+      }
+    } else {
+      const find = isDomExist(key);
+      console.log("find", find, doms);
+  
+      if (find) {
+        if (!loadsh.isArray(copyDom)) return copyDom;
+        let index = copyDom.findIndex(n => n.key === key);
+        console.log("copyDom", copyDom);
+        if (index > -1) {
+          index = isPrev ? index : index + 1;
+          copyDom.splice(index, 0, iDom);
+        } else {
+          const len = copyDom.length;
+          for (let i = 0; i < len; i++) {
+            const item = copyDom[i];
+            if (loadsh.isArray(item.children)) {
+              item.children = insertBrotherSelectorDom(key, iDom, item.children, isPrev);
+            }
           }
         }
       }
@@ -342,8 +350,8 @@ const ContainerRight = () => {
       children: "我是新插入的兄弟节点",
     };
 
-    const newDom = insertBrotherSelectorDom(brotherKey, targetDom, dom, false);
-    console.log(newDom);
+    const newDom = insertBrotherSelectorDom(brotherKey, targetDom, selectorDomData, true);
+    console.log("newDom", newDom);
     setSelectorDomData(newDom);
   }
   // 按钮 - 删除节点
