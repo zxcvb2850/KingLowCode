@@ -14,7 +14,7 @@ import lodash from "lodash";
 import KingUi from "../../components/Template/KingUi";
 import Utils from "../../utils/Utils";
 import useChangeComponent from "../../hooks/useChangeComponent";
-import {DATA_COMPONENT_ACTIVE, DATA_COMPONENT_KEY} from "../../utils/_Constant";
+import {DATA_COMPONENT_ACTIVE, DATA_COMPONENT_INSERT, DATA_COMPONENT_KEY} from "../../utils/_Constant";
 
 const ContainerCenter = () => {
   const kContainerCenterEle = useRef<HTMLDivElement>(null);
@@ -50,7 +50,6 @@ const ContainerCenter = () => {
     e.preventDefault();
     const target = e.target as HTMLElement;
     const componentHTML: HTMLElement | null = getComponentNode(target);
-    console.log("componentHTML", componentHTML);
 
     if (!!componentHTML) {
       // 获取选中的组件数据
@@ -75,34 +74,31 @@ const ContainerCenter = () => {
   const dropContainerCenter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const name: string = e.dataTransfer.getData("componentName");
-    console.log("containerCenter drop", e, name);
     if (name) {
       const insertDOM: CustomReactPortal = {
         key: Utils.uuid(),
         // @ts-ignore
         type: KingUi[name],
         tag: name,
-        props: {},
+        props: { [DATA_COMPONENT_ACTIVE]: "true" },
         children: "我是拖拽的按钮",
       };
-      console.log("insertDOM", insertDOM, insertPositionDom);
       const newDom = insertBrotherSelectorDom(insertPositionDom, insertDOM, null, insertIsPrev);
-      // const newDom = insertSelectorDom(insertPositionDom, insertDOM);
+      clearDomStyle();
       setSselectorDomData(newDom);
+      setSelectData(insertDOM);
     }
   };
   const dragLeaveContainerCenter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    // console.log("containerCenter dragLeave", e);
+    console.log("containerCenter dragLeave", e);
+    clearDomStyle();
   };
   const dragOverContainerCenter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const { offsetX, offsetY, pageX, pageY } = e.nativeEvent;
     const key =  (e.target as HTMLElement).getAttribute(DATA_COMPONENT_KEY);
     const componentHTML: HTMLElement | null = getComponentNode(e.target as HTMLElement);
-    // const name =
-    console.log("containerCenter dragOver", e, offsetX, offsetY);
-
 
     if (!!componentHTML) {
         let isPrev = false;
@@ -114,18 +110,30 @@ const ContainerCenter = () => {
       }
       // 获取选中的组件数据
       const curComId = componentHTML.getAttribute(DATA_COMPONENT_KEY);
-      // 添加选中效果
-      let list = document.querySelectorAll(`[${DATA_COMPONENT_ACTIVE}="true"]`);
-      list.forEach((el) => {
-        el.setAttribute(DATA_COMPONENT_ACTIVE, "");
-      });
+
+      clearDomStyle();
 
       componentHTML.setAttribute(DATA_COMPONENT_ACTIVE, "true");
+      componentHTML.setAttribute(DATA_COMPONENT_INSERT, isPrev ? "top" : "bottom");
 
       setInsertPositionDom(curComId);
-      setInsertIsPrev(isPrev);
+      setInsertIsPrev(isPrev); // 清空插入的标示
     }
   };
+
+  // 清除样式
+  const clearDomStyle = () => {
+    // 添加选中效果
+    const list = document.querySelectorAll(`[${DATA_COMPONENT_ACTIVE}="true"]`);
+    list.forEach((ele) => {
+      ele.setAttribute(DATA_COMPONENT_ACTIVE, "");
+    });
+
+    const insertTopEle = document.querySelector(`[${DATA_COMPONENT_INSERT}="top"]`);
+    const insertBottomEle = document.querySelector(`[${DATA_COMPONENT_INSERT}="bottom"]`);
+    insertTopEle?.setAttribute(DATA_COMPONENT_INSERT, "");
+    insertBottomEle?.setAttribute(DATA_COMPONENT_INSERT, "");
+  }
 
   // 查找当前选中的组件的数据结构
   const findSelectDom = (key: string) => {
@@ -148,7 +156,7 @@ const ContainerCenter = () => {
       const item = lodash.cloneDeep(dom[i]);
       item.props["key"] = `${item.key}`;
       item.props[DATA_COMPONENT_KEY] = `${item.key}`;
-      item.props[DATA_COMPONENT_ACTIVE] = ``;
+      item.props[DATA_COMPONENT_ACTIVE] = item.props.DATA_COMPONENT_ACTIVE || "";
 
       doms.push(
         React.createElement(
