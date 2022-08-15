@@ -6,6 +6,7 @@ import { useRecoilState } from "recoil";
 import store from "../store";
 import KingUi from "../components/Template/KingUi";
 import Utils from "../utils/Utils";
+import {DATA_COMPONENT_ACTIVE} from "../utils/_Constant";
 
 const useInitComponents = () => {
   const [, setSelectDom] = useRecoilState(store.home.selectorDomData);
@@ -56,14 +57,14 @@ const useInitComponents = () => {
         key: Utils.uuid(),
         type: "span",
         tag: "span",
-        props: { "data-component-active": "false" },
+        props: { [DATA_COMPONENT_ACTIVE]: "false" },
         children: " !!!",
       },
       {
         key: Utils.uuid(),
         type: "ul",
         tag: "ul",
-        props: { "data-component-active": "false" },
+        props: { [DATA_COMPONENT_ACTIVE]: "false" },
         isLoop: true,
         children: [
           {

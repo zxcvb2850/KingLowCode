@@ -29,10 +29,11 @@ export const selectorDomData = selector({
   }
 })
 
+export type ExpandDomDataType = Map<string, CustomReactPortal>
 // 平铺数据，方便查询数据
-export const expandDomData = atom<CustomReactPortal[]>({
+export const expandDomData = atom<ExpandDomDataType>({
   key: "expandDomData",
-  default: [],
+  default: new Map(),
 })
 
 export const selectData = atom<CustomReactPortal | null>({

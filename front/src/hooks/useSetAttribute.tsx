@@ -1,16 +1,16 @@
 import { useLayoutEffect, RefObject } from "react";
+import {DATA_COMPONENT_ACTIVE, DATA_COMPONENT_KEY} from "../utils/_Constant";
 
 const useSetAttribute = (ele: RefObject<HTMLElement>, props: any) => {
   useLayoutEffect(() => {
     if (ele.current) {
-      ele.current.setAttribute("data-component-active", "");
+      ele.current.setAttribute(DATA_COMPONENT_ACTIVE, "");
     }
   }, []);
 
   useLayoutEffect(() => {
-    const dataComponentId = "data-component-key";
-    if (ele.current && !!props[dataComponentId]) {
-      ele?.current.setAttribute("data-component-key", props[dataComponentId]);
+    if (ele.current && !!props[DATA_COMPONENT_KEY]) {
+      ele?.current.setAttribute(DATA_COMPONENT_KEY, props[DATA_COMPONENT_KEY]);
     }
   }, [props]);
 

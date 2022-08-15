@@ -1,14 +1,29 @@
-import React, { KeyboardEvent, ReactElement, Fragment, useEffect } from "react";
+import React, {
+  MouseEvent,
+  ReactElement,
+  Fragment,
+  useEffect,
+  useRef,
+  DragEvent, useState,
+} from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import store from "../../store";
 import { CustomReactPortal } from "../../store/module/home";
 import "./index.less";
 import lodash from "lodash";
+import KingUi from "../../components/Template/KingUi";
+import Utils from "../../utils/Utils";
+import useChangeComponent from "../../hooks/useChangeComponent";
+import {DATA_COMPONENT_ACTIVE, DATA_COMPONENT_KEY} from "../../utils/_Constant";
 
 const ContainerCenter = () => {
-  const [dom, setDom] = useRecoilState(store.home.selectorDomData);
+  const kContainerCenterEle = useRef<HTMLDivElement>(null);
+  const {insertSelectorDom, insertBrotherSelectorDom} = useChangeComponent();
+  const [selectorDomData, setSselectorDomData] = useRecoilState(store.home.selectorDomData);
   const expandDom = useRecoilValue(store.home.expandDomData);
   const [selectData, setSelectData] = useRecoilState(store.home.selectData);
+  const [insertPositionDom, setInsertPositionDom] = useState<string | null>(null);
+  const [insertIsPrev, setInsertIsPrev] = useState<boolean>(false);
 
   useEffect(() => {
     console.log("expandDom", expandDom);
@@ -21,7 +36,7 @@ const ContainerCenter = () => {
 
   // 获取 DOM 当前点击或父级可点击的DOM
   const getComponentNode = (node: HTMLElement): HTMLElement | null => {
-    if (node && node.getAttribute("data-component-active") !== null)
+    if (node && node.getAttribute(DATA_COMPONENT_ACTIVE) !== null)
       return node;
     else {
       if (node.parentElement) return getComponentNode(node.parentElement);
@@ -31,24 +46,24 @@ const ContainerCenter = () => {
   };
 
   // 点击 DOM
-  const clickContainerCenter = (e: KeyboardEvent<HTMLElement>) => {
+  const clickContainerCenter = (e: MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
-    const target = e.target;
-    let componentHTML: HTMLElement | null = getComponentNode(target);
+    const target = e.target as HTMLElement;
+    const componentHTML: HTMLElement | null = getComponentNode(target);
     console.log("componentHTML", componentHTML);
 
     if (!!componentHTML) {
       // 获取选中的组件数据
-      const curComId = componentHTML.getAttribute("data-component-key");
+      const curComId = componentHTML.getAttribute(DATA_COMPONENT_KEY);
       // 添加选中效果
-      let list = document.querySelectorAll('[data-component-active="true"]');
+      let list = document.querySelectorAll(`[${DATA_COMPONENT_ACTIVE}="true"]`);
       list.forEach((el) => {
-        el.setAttribute("data-component-active", "");
+        el.setAttribute(DATA_COMPONENT_ACTIVE, "");
       });
 
       let curSelectData: CustomReactPortal | null = null;
       if (curComId && curComId !== selectData?.key) {
-        componentHTML.setAttribute("data-component-active", "true");
+        componentHTML.setAttribute(DATA_COMPONENT_ACTIVE, "true");
 
         curSelectData = findSelectDom(curComId);
       }
@@ -56,9 +71,65 @@ const ContainerCenter = () => {
     }
   };
 
+  //
+  const dropContainerCenter = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const name: string = e.dataTransfer.getData("componentName");
+    console.log("containerCenter drop", e, name);
+    if (name) {
+      const insertDOM: CustomReactPortal = {
+        key: Utils.uuid(),
+        // @ts-ignore
+        type: KingUi[name],
+        tag: name,
+        props: {},
+        children: "我是拖拽的按钮",
+      };
+      console.log("insertDOM", insertDOM, insertPositionDom);
+      const newDom = insertBrotherSelectorDom(insertPositionDom, insertDOM, null, insertIsPrev);
+      // const newDom = insertSelectorDom(insertPositionDom, insertDOM);
+      setSselectorDomData(newDom);
+    }
+  };
+  const dragLeaveContainerCenter = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    // console.log("containerCenter dragLeave", e);
+  };
+  const dragOverContainerCenter = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const { offsetX, offsetY, pageX, pageY } = e.nativeEvent;
+    const key =  (e.target as HTMLElement).getAttribute(DATA_COMPONENT_KEY);
+    const componentHTML: HTMLElement | null = getComponentNode(e.target as HTMLElement);
+    // const name =
+    console.log("containerCenter dragOver", e, offsetX, offsetY);
+
+
+    if (!!componentHTML) {
+        let isPrev = false;
+      const {offsetLeft, offsetTop, offsetWidth,offsetHeight} = componentHTML;
+      if((pageX - offsetLeft) > (offsetWidth / 2) || (pageY - offsetTop) > (offsetHeight / 2)) {
+          isPrev = false;
+      } else {
+          isPrev = true;
+      }
+      // 获取选中的组件数据
+      const curComId = componentHTML.getAttribute(DATA_COMPONENT_KEY);
+      // 添加选中效果
+      let list = document.querySelectorAll(`[${DATA_COMPONENT_ACTIVE}="true"]`);
+      list.forEach((el) => {
+        el.setAttribute(DATA_COMPONENT_ACTIVE, "");
+      });
+
+      componentHTML.setAttribute(DATA_COMPONENT_ACTIVE, "true");
+
+      setInsertPositionDom(curComId);
+      setInsertIsPrev(isPrev);
+    }
+  };
+
   // 查找当前选中的组件的数据结构
-  const findSelectDom = (id: string) => {
-    const find = expandDom.find((n) => n.key == id);
+  const findSelectDom = (key: string) => {
+    const find = expandDom.get(key);
     return find || null;
   };
 
@@ -76,8 +147,8 @@ const ContainerCenter = () => {
     for (let i = 0; i < len; i++) {
       const item = lodash.cloneDeep(dom[i]);
       item.props["key"] = `${item.key}`;
-      item.props["data-component-key"] = `${item.key}`;
-      item.props["data-component-active"] = ``;
+      item.props[DATA_COMPONENT_KEY] = `${item.key}`;
+      item.props[DATA_COMPONENT_ACTIVE] = ``;
 
       doms.push(
         React.createElement(
@@ -90,10 +161,17 @@ const ContainerCenter = () => {
     return React.createElement(Fragment, null, ...(isLoop ? [doms] : doms));
   };
 
-  return React.createElement(
-    "div",
-    { className: "k-container-center", onClick: clickContainerCenter },
-    renderItemChildren(dom)
+  return (
+    <div
+      ref={kContainerCenterEle}
+      className="k-container-center"
+      onDrop={dropContainerCenter}
+      onDragLeave={dragLeaveContainerCenter}
+      onDragOver={dragOverContainerCenter}
+      onClick={clickContainerCenter}
+    >
+      {renderItemChildren(selectorDomData)}
+    </div>
   );
 };
 
