@@ -62,7 +62,7 @@ const useChangeComponent = () => {
   const insertBrotherSelectorDom = (
     key: string | null,
     iDom: CustomReactPortal,
-    doms: CustomReactPortal[] | null,
+    doms?: CustomReactPortal[] | null,
     isPrev = false
   ): CustomReactPortal[] => {
     doms = doms || selectorDomData;

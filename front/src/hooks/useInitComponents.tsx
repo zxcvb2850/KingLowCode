@@ -11,7 +11,7 @@ import {DATA_COMPONENT_ACTIVE} from "../utils/_Constant";
 const useInitComponents = () => {
   const [, setSelectDom] = useRecoilState(store.home.selectorDomData);
   useLayoutEffect(() => {
-    setSelectDom([
+    /*setSelectDom([
       {
         key: Utils.uuid(),
         type: Fragment,
@@ -97,7 +97,8 @@ const useInitComponents = () => {
           },
         ],
       },
-    ]);
+    ]);*/
+    setSelectDom([]);
   }, []);
 
   return null;

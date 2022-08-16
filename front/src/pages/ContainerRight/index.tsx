@@ -8,6 +8,9 @@ import Utils from "../../utils/Utils";
 import KingUi from "../../components/Template/KingUi";
 import useChangeComponent from "../../hooks/useChangeComponent";
 import {DATA_COMPONENT_ACTIVE} from "../../utils/_Constant";
+import { Select } from "antd";
+import { StepBackwardOutlined, StepForwardOutlined } from "@ant-design/icons";
+import React from "react";
 
 const ContainerRight = () => {
   const [selectorDomData, setSelectorDomData] = useRecoilState(store.home.selectorDomData);
@@ -34,13 +37,14 @@ const ContainerRight = () => {
   const changeValue = useCallback(
     loadsh.debounce((value: string) => {
       updateSelectorDom(value);
-    }, 600),
+    }, 300),
     [selectData]
   );
 
   const updateSelectorDom = (val: string) => {
     if (!selectData) return;
     const copySelectorDom = loadsh.cloneDeep(selectorDomData);
+    const copySelectData = loadsh.cloneDeep(selectData);
 
     function loopDom(doms: CustomReactPortal[]): any {
       if (!selectData) return null;
@@ -49,6 +53,7 @@ const ContainerRight = () => {
         const item = doms[i];
         if (item.key === selectData.key) {
           item.children = val;
+          copySelectData.children = val;
           break;
         } else if (Utils.isDomBase(item)) {
           item.children = item.children;
@@ -61,6 +66,7 @@ const ContainerRight = () => {
     }
     const doms = loopDom(copySelectorDom);
 
+    setSelectData(copySelectData);
     setSelectorDomData(doms);
   };
 
@@ -129,6 +135,37 @@ const ContainerRight = () => {
     setSelectorDomData(newDom);
   }
 
+  // 复制节点
+  const handleCopyDom = () => {
+    console.log("-- 复制某个节点 --");
+    if (!selectData) return;
+    const copyDom = loadsh.cloneDeep(selectData);
+    copyDom.key = Utils.uuid();
+    const newDom = insertBrotherSelectorDom(selectData.key, copyDom);
+    setSelectorDomData(newDom);
+  }
+
+  // 修改 ICON
+  const changeAlertIcon = (value: string) => {
+    const copySelectData = loadsh.cloneDeep(selectData);
+    const props = copySelectData?.props || {};
+    if (value) {
+      props.showIcon = true;
+      const icons = {
+        "StepBackwardOutlined": StepBackwardOutlined,
+        "StepForwardOutlined": StepForwardOutlined
+      };
+      // @ts-ignore
+      props.icon = React.createElement(icons[value], null, null);
+    } else {
+      props.showIcon = false;
+    }
+    console.log("value", value);
+    console.log("selectorDomData", selectorDomData);
+    console.log("copySelectData", copySelectData);
+    setSelectorDomData([copySelectData as CustomReactPortal]);
+  }
+
   return (
     <div className="k-container-right">
       right
@@ -139,6 +176,7 @@ const ContainerRight = () => {
       <KingUi.KButton onClick={handleDeleteDom}>删除节点</KingUi.KButton>
       <KingUi.KButton onClick={handleUpDom}>上移节点</KingUi.KButton>
       <KingUi.KButton onClick={handleDownDom}>下移节点</KingUi.KButton>
+      <KingUi.KButton onClick={handleCopyDom}>复制节点</KingUi.KButton>
       {selectData?.key}
       {selectData ? (
         Utils.isDomBase(selectData) ? (
@@ -146,8 +184,18 @@ const ContainerRight = () => {
             <div>
               <h4>组件 {selectData.tag}</h4>
             </div>
-            <span>value: </span>
-            <input type="text" value={value} onChange={changeValueContent} />
+            <div>
+              <span>value: </span>
+              <input type="text" value={value} onChange={changeValueContent} />
+            </div>
+            <div>
+              <span>icon: </span>
+              <Select onChange={changeAlertIcon}>
+                <Select.Option value={"0"}>无ICON</Select.Option>
+                <Select.Option value={"StepBackwardOutlined"}><StepBackwardOutlined/></Select.Option>
+                <Select.Option value={"StepForwardOutlined"}><StepForwardOutlined/></Select.Option>
+              </Select>
+            </div>
           </div>
         ) : (
           <div>

@@ -4,6 +4,7 @@ import store from "../../store";
 import { CustomReactPortal } from "../../store/module/home";
 import "./index.less";
 import lodash from "lodash";
+import AntdUi from "../../components/Template/AntdUi";
 import KingUi from "../../components/Template/KingUi";
 import Utils from "../../utils/Utils";
 import useChangeComponent from "../../hooks/useChangeComponent";
@@ -65,6 +66,7 @@ const ContainerCenter = () => {
         componentHTML.setAttribute(DATA_COMPONENT_ACTIVE, "true");
 
         curSelectData = findSelectDom(curComId);
+        setSelectData(curSelectData);
       }
       setSelectData(curSelectData);
     }
@@ -74,11 +76,12 @@ const ContainerCenter = () => {
   const dropContainerCenter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const name: string = e.dataTransfer.getData("componentName");
+    console.log("name", name);
     if (name) {
       const insertDOM: CustomReactPortal = {
         key: Utils.uuid(),
         // @ts-ignore
-        type: KingUi[name],
+        type: AntdUi[name],
         tag: name,
         props: { [DATA_COMPONENT_ACTIVE]: "true" },
         children: "我是拖拽的按钮",

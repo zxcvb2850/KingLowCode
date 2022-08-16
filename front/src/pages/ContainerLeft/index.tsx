@@ -1,6 +1,8 @@
 import React from "react";
+import {Alert, Avatar, Badge, Button} from "antd";
 import KButton from "../../components/Template/KingUi/KButton";
 import "./index.less";
+import AAlert from "../../components/Template/AntdUi/AButton";
 
 const ContainerLeft = () => {
   const handleClick = () => {};
@@ -37,6 +39,37 @@ const ContainerLeft = () => {
         >
             提示
         </div>
+      <div className="component-example-wrap">
+        <div
+            className="item-component-example"
+            data-name="AButton"
+            draggable
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+        >
+          <Button type="primary">按钮</Button>
+        </div>
+        <div
+            className="item-component-example"
+            data-name="AAlert"
+            draggable
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+        >
+          <Alert message={"提示"}/>
+        </div>
+        <div
+            className="item-component-example"
+            data-name="ABadge"
+            draggable
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+        >
+          <Badge>
+            <Avatar size="large" shape="square"/>
+          </Badge>
+        </div>
+      </div>
     </div>
   );
 };
