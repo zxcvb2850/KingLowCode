@@ -76,12 +76,10 @@ const useChangeComponent = () => {
       }
     } else {
       const find = isDomExist(key, expandDomData);
-      console.log("find", find, doms);
 
       if (find) {
         if (!loadsh.isArray(copyDom)) return copyDom;
         let index = copyDom.findIndex((n) => n.key === key);
-        console.log("copyDom", copyDom);
         if (index > -1) {
           index = isPrev ? index : index + 1;
           copyDom.splice(index, 0, iDom);
@@ -90,12 +88,7 @@ const useChangeComponent = () => {
           for (let i = 0; i < len; i++) {
             const item = copyDom[i];
             if (loadsh.isArray(item.children)) {
-              item.children = insertBrotherSelectorDom(
-                key,
-                iDom,
-                item.children,
-                isPrev
-              );
+              item.children = insertBrotherSelectorDom(key, iDom, item.children, isPrev);
             }
           }
         }
@@ -139,6 +132,61 @@ const useChangeComponent = () => {
     return copyDom;
   };
 
+  /**
+   * 上移节点
+   * @param key 需要删除节点位置的key
+   * @param doms 当前所有节点数据
+   */
+  const upSelectorDom = (key: string, doms?: CustomReactPortal[] | null):CustomReactPortal[] => {
+    doms = doms??selectorDomData;
+    const copyDom = loadsh.cloneDeep(doms);
+    const index = doms.findIndex(n=>n.key === key);
+    if (index > -1) {
+      if (index === 0) {
+        console.log("%c 已经是该容器中最上面的元素了", "color: red");
+      } else {
+        copyDom[index] = copyDom.splice(index - 1,1,copyDom[index])[0];
+      }
+    } else {
+      const len = copyDom.length;
+      for (let i = 0; i < len; i++) {
+        const item = copyDom[i];
+        if (Array.isArray(item.children)) {
+          item.children = upSelectorDom(key, item.children);
+        }
+      }
+    }
+
+    return copyDom;
+  }
+
+  /**
+   * 下移节点
+   * @param key 需要删除节点位置的key
+   * @param doms 当前所有节点数据
+   */
+  const downSelectorDom = (key: string, doms?:CustomReactPortal[]|null):CustomReactPortal[] => {
+    doms = doms??selectorDomData;
+    const copyDom = loadsh.cloneDeep(doms);
+    const len = copyDom.length;
+    const index = doms.findIndex(n=>n.key === key);
+    if (index > -1) {
+      if (index === len - 1) {
+        console.log("%c 已经是该容器中最下面的元素了", "color: red");
+      } else {
+        copyDom[index] = copyDom.splice(index + 1,1,copyDom[index])[0];
+      }
+    } else {
+      for (let i = 0; i < len; i++) {
+        const item = copyDom[i];
+        if (Array.isArray(item.children)) {
+          item.children = downSelectorDom(key, item.children);
+        }
+      }
+    }
+    return copyDom;
+  }
+
   // 查询节点
   const searchSelectorDom = (key: string): CustomReactPortal | null => {
     return isDomExist(key, expandDomData);
@@ -153,7 +201,13 @@ const useChangeComponent = () => {
   // 查询兄弟节点
   const searchBrotherSelector = () => {};
 
-  return { insertSelectorDom, insertBrotherSelectorDom, deleteSelectorDom };
+  return {
+    insertSelectorDom,
+    insertBrotherSelectorDom,
+    deleteSelectorDom,
+    upSelectorDom,
+    downSelectorDom,
+  };
 };
 
 export default useChangeComponent;

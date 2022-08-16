@@ -19,15 +19,24 @@ const ContainerLeft = () => {
   return (
     <div className="k-container-left">
       <h2>组件</h2>
-      <div
-        className="item-component-example"
-        data-name="KButton"
-        draggable
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-      >
-        按钮
-      </div>
+        <div
+            className="item-component-example"
+            data-name="KButton"
+            draggable
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+        >
+            按钮
+        </div>
+        <div
+            className="item-component-example"
+            data-name="KAlert"
+            draggable
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+        >
+            提示
+        </div>
     </div>
   );
 };

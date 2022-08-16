@@ -10,127 +10,13 @@ import useChangeComponent from "../../hooks/useChangeComponent";
 import {DATA_COMPONENT_ACTIVE} from "../../utils/_Constant";
 
 const ContainerRight = () => {
-  const [selectorDomData, setSelectorDomData] = useRecoilState(
-    store.home.selectorDomData
-  );
+  const [selectorDomData, setSelectorDomData] = useRecoilState(store.home.selectorDomData);
   const [selectData, setSelectData] = useRecoilState(store.home.selectData);
 
-  const { insertSelectorDom, insertBrotherSelectorDom, deleteSelectorDom } =
+  const { insertSelectorDom, insertBrotherSelectorDom, deleteSelectorDom, upSelectorDom, downSelectorDom } =
     useChangeComponent();
 
   const [value, setValue] = useState<string>("");
-  const [dom, setDom] = useState<CustomReactPortal[]>([
-    {
-      key: "3aeb8223-039e",
-      type: Fragment,
-      tag: "Fragment",
-      isCustomComponent: true,
-      props: {},
-      children: [
-        {
-          key: "3382cde6-6a40",
-          type: KingUi.KAlert,
-          tag: "KAlert",
-          isCustomComponent: true,
-          props: {},
-          children: "Hello",
-        },
-        {
-          key: "db084212-2512",
-          type: KingUi.KButton,
-          tag: "KButton",
-          isCustomComponent: true,
-          props: {},
-          children: " World",
-        },
-        {
-          key: "0a74b145-96a2",
-          type: KingUi.KButton,
-          tag: "KButton",
-          isCustomComponent: true,
-          props: {},
-          children: " World",
-        },
-        {
-          key: "0a74b145-96a2",
-          type: Fragment,
-          tag: "Fragment",
-          isCustomComponent: true,
-          props: {},
-          children: [
-            {
-              key: "0a74b145-96a3",
-              type: "span",
-              tag: "span",
-              isCustomComponent: true,
-              props: {},
-              children: "xxxxx",
-            },
-          ],
-        },
-      ],
-    },
-    {
-      key: "5427ab12-3d6f",
-      type: "span",
-      tag: "span",
-      props: {
-        [DATA_COMPONENT_ACTIVE]: "false",
-      },
-      children: " !!!",
-    },
-    {
-      key: "a5f06c48-0e6e",
-      type: "ul",
-      tag: "ul",
-      props: {
-        [DATA_COMPONENT_ACTIVE]: "false",
-      },
-      isLoop: true,
-      children: [
-        {
-          key: "a866b984-c3e0",
-          type: "li",
-          tag: "li",
-          props: {
-            key: "a",
-            [DATA_COMPONENT_ACTIVE]: "false",
-          },
-          children: 1,
-        },
-        {
-          key: "f8fb7a73-0c36",
-          type: "li",
-          tag: "li",
-          props: {
-            key: "b",
-            [DATA_COMPONENT_ACTIVE]: "false",
-          },
-          children: 2,
-        },
-        {
-          key: "98d84532-de70",
-          type: "li",
-          tag: "li",
-          props: {
-            key: "c",
-            [DATA_COMPONENT_ACTIVE]: "false",
-          },
-          children: 3,
-        },
-        {
-          key: "316907ab-9073",
-          type: "li",
-          tag: "li",
-          props: {
-            key: "d",
-            [DATA_COMPONENT_ACTIVE]: "false",
-          },
-          children: 4,
-        },
-      ],
-    },
-  ]);
 
   useEffect(() => {
     if (selectData && !loadsh.isArray(selectData.children)) {
@@ -175,14 +61,13 @@ const ContainerRight = () => {
     }
     const doms = loopDom(copySelectorDom);
 
-    setSelectorDomData(copySelectorDom);
+    setSelectorDomData(doms);
   };
 
   // 按钮 - 插入节点
   const handleInsertDom = () => {
     console.log("-- 插入某个节点 --");
     const parentKey = selectData?.key || null;
-    console.log("parentKey", parentKey);
     const targetDom: CustomReactPortal = {
       key: Utils.uuid(),
       type: KingUi.KButton,
@@ -192,15 +77,12 @@ const ContainerRight = () => {
       children: "我是新插入的节点",
     };
     const newDom = insertSelectorDom(parentKey, targetDom);
-    console.log("newDom", newDom);
 
     setSelectorDomData(newDom);
   };
   // 按钮 - 插入兄弟节点，当前节点之上或当前节点之下
   const handleInsertBrotherDom = () => {
-    console.log("-- 插入兄弟节点 --");
     const brotherKey = selectData?.key || null;
-    console.log("brotherKey", brotherKey);
     const targetDom: CustomReactPortal = {
       key: Utils.uuid(),
       type: KingUi.KButton,
@@ -216,7 +98,6 @@ const ContainerRight = () => {
       selectorDomData,
       true
     );
-    console.log("newDom", newDom);
     setSelectorDomData(newDom);
   };
   // 按钮 - 删除节点
@@ -229,6 +110,25 @@ const ContainerRight = () => {
     setSelectData(null);
   };
 
+  // 按钮 - 上移节点
+  const handleUpDom = () => {
+    console.log("-- 上移某个节点 --");
+    if (!selectData) return;
+
+    const key = selectData.key;
+    const newDom = upSelectorDom(key);
+    setSelectorDomData(newDom);
+  }
+
+  // 按钮 - 下移节点
+  const handleDownDom = () => {
+    console.log("-- 下移某个节点 --");
+    if (!selectData) return;
+    const key = selectData.key;
+    const newDom = downSelectorDom(key);
+    setSelectorDomData(newDom);
+  }
+
   return (
     <div className="k-container-right">
       right
@@ -237,6 +137,8 @@ const ContainerRight = () => {
         插入兄弟节点
       </KingUi.KButton>
       <KingUi.KButton onClick={handleDeleteDom}>删除节点</KingUi.KButton>
+      <KingUi.KButton onClick={handleUpDom}>上移节点</KingUi.KButton>
+      <KingUi.KButton onClick={handleDownDom}>下移节点</KingUi.KButton>
       {selectData?.key}
       {selectData ? (
         Utils.isDomBase(selectData) ? (

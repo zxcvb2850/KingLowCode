@@ -1,11 +1,4 @@
-import React, {
-  MouseEvent,
-  ReactElement,
-  Fragment,
-  useEffect,
-  useRef,
-  DragEvent, useState,
-} from "react";
+import React, {Fragment, useEffect, useRef, useState, MouseEvent, ReactElement, DragEvent} from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import store from "../../store";
 import { CustomReactPortal } from "../../store/module/home";
@@ -18,16 +11,23 @@ import {DATA_COMPONENT_ACTIVE, DATA_COMPONENT_INSERT, DATA_COMPONENT_KEY} from "
 
 const ContainerCenter = () => {
   const kContainerCenterEle = useRef<HTMLDivElement>(null);
-  const {insertSelectorDom, insertBrotherSelectorDom} = useChangeComponent();
+  const {insertBrotherSelectorDom} = useChangeComponent();
   const [selectorDomData, setSselectorDomData] = useRecoilState(store.home.selectorDomData);
   const expandDom = useRecoilValue(store.home.expandDomData);
   const [selectData, setSelectData] = useRecoilState(store.home.selectData);
   const [insertPositionDom, setInsertPositionDom] = useState<string | null>(null);
   const [insertIsPrev, setInsertIsPrev] = useState<boolean>(false);
+  const [insertDOMKey, setInsertDOMKey] = useState<string>("");
 
   useEffect(() => {
-    console.log("expandDom", expandDom);
-  }, [expandDom]);
+    // 拖拽插入的节点，默认选中
+    if (insertDOMKey) {
+      const dom = document.querySelector(`[${DATA_COMPONENT_KEY}='${insertDOMKey}']`);
+      dom?.setAttribute(DATA_COMPONENT_ACTIVE, "true");
+      setInsertDOMKey("");
+    }
+
+  }, [insertDOMKey]);
 
   // 添加自定义 props 属性
   const addClickProps = (itemProps: any, children: CustomReactPortal) => {
@@ -83,8 +83,10 @@ const ContainerCenter = () => {
         props: { [DATA_COMPONENT_ACTIVE]: "true" },
         children: "我是拖拽的按钮",
       };
+
       const newDom = insertBrotherSelectorDom(insertPositionDom, insertDOM, null, insertIsPrev);
       clearDomStyle();
+      setInsertDOMKey(insertDOM.key);
       setSselectorDomData(newDom);
       setSelectData(insertDOM);
     }
@@ -96,7 +98,7 @@ const ContainerCenter = () => {
   };
   const dragOverContainerCenter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    const { offsetX, offsetY, pageX, pageY } = e.nativeEvent;
+    const { pageX, pageY } = e.nativeEvent;
     const key =  (e.target as HTMLElement).getAttribute(DATA_COMPONENT_KEY);
     const componentHTML: HTMLElement | null = getComponentNode(e.target as HTMLElement);
 
