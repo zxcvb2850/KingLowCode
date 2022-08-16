@@ -16,8 +16,7 @@ const ContainerRight = () => {
   const [selectorDomData, setSelectorDomData] = useRecoilState(store.home.selectorDomData);
   const [selectData, setSelectData] = useRecoilState(store.home.selectData);
 
-  const { insertSelectorDom, insertBrotherSelectorDom, deleteSelectorDom, upSelectorDom, downSelectorDom } =
-    useChangeComponent();
+  const { insertSelectorDom, insertBrotherSelectorDom, deleteSelectorDom, upSelectorDom, downSelectorDom, updateSelectorDom: changeUpdateSelectorDom } = useChangeComponent();
 
   const [value, setValue] = useState<string>("");
 
@@ -36,39 +35,13 @@ const ContainerRight = () => {
   // 提交修改内容
   const changeValue = useCallback(
     loadsh.debounce((value: string) => {
-      updateSelectorDom(value);
+      if (selectData) {
+        const doms = changeUpdateSelectorDom(selectData.key,{children: value});
+        setSelectorDomData(doms);
+      }
     }, 300),
     [selectData]
   );
-
-  const updateSelectorDom = (val: string) => {
-    if (!selectData) return;
-    const copySelectorDom = loadsh.cloneDeep(selectorDomData);
-    const copySelectData = loadsh.cloneDeep(selectData);
-
-    function loopDom(doms: CustomReactPortal[]): any {
-      if (!selectData) return null;
-      const len = doms.length;
-      for (let i = 0; i < len; i++) {
-        const item = doms[i];
-        if (item.key === selectData.key) {
-          item.children = val;
-          copySelectData.children = val;
-          break;
-        } else if (Utils.isDomBase(item)) {
-          item.children = item.children;
-        } else {
-          item.children = loopDom(item.children as CustomReactPortal[]);
-        }
-      }
-
-      return doms;
-    }
-    const doms = loopDom(copySelectorDom);
-
-    setSelectData(copySelectData);
-    setSelectorDomData(doms);
-  };
 
   // 按钮 - 插入节点
   const handleInsertDom = () => {

@@ -1,6 +1,6 @@
-import { useRecoilValue } from "recoil";
+import { useRecoilValue, useRecoilState } from "recoil";
 import store from "../store";
-import { CustomReactPortal } from "../store/module/home";
+import {CustomReactPortal, CustomReactPortalChildren} from "../store/module/home";
 import loadsh from "lodash";
 import Utils from "../utils/Utils";
 import { isDomExist } from "../utils/ComponentsTree";
@@ -8,6 +8,7 @@ import { isDomExist } from "../utils/ComponentsTree";
 const useChangeComponent = () => {
   const selectorDomData = useRecoilValue(store.home.selectorDomData);
   const expandDomData = useRecoilValue(store.home.expandDomData);
+  const [selectData, setSelectData] = useRecoilState(store.home.selectData);
 
   /**
    * 插入子节点
@@ -137,7 +138,10 @@ const useChangeComponent = () => {
    * @param key 需要删除节点位置的key
    * @param doms 当前所有节点数据
    */
-  const upSelectorDom = (key: string, doms?: CustomReactPortal[] | null):CustomReactPortal[] => {
+  const upSelectorDom = (
+      key: string,
+      doms?: CustomReactPortal[] | null
+  ):CustomReactPortal[] => {
     doms = doms??selectorDomData;
     const copyDom = loadsh.cloneDeep(doms);
     const index = doms.findIndex(n=>n.key === key);
@@ -165,7 +169,10 @@ const useChangeComponent = () => {
    * @param key 需要删除节点位置的key
    * @param doms 当前所有节点数据
    */
-  const downSelectorDom = (key: string, doms?:CustomReactPortal[]|null):CustomReactPortal[] => {
+  const downSelectorDom = (
+      key: string,
+      doms?:CustomReactPortal[] | null
+  ):CustomReactPortal[] => {
     doms = doms??selectorDomData;
     const copyDom = loadsh.cloneDeep(doms);
     const len = copyDom.length;
@@ -185,6 +192,43 @@ const useChangeComponent = () => {
       }
     }
     return copyDom;
+  }
+
+  /**
+   * 更新节点
+   * @param key 需要更新节点的key
+   * @param updateDom 更新的内容 props children
+   */
+  const updateSelectorDom = (
+      key: string,
+      updateDom: {props?: any, children?: CustomReactPortalChildren},
+  ): CustomReactPortal[] => {
+    const copyDom = loadsh.cloneDeep(selectorDomData);
+    const copySelectData = loadsh.cloneDeep(selectData);
+    const oldDom = expandDomData.get(key);
+
+    function loopUpdateDom (doms: CustomReactPortal[]): any {
+      const len = doms.length;
+      for (let i = 0; i < len; i++) {
+        const item = doms[i];
+        if (item.key === key) {
+          item.children = updateDom?.children || (oldDom?.children || "");
+          item.props = updateDom?.props || oldDom?.props;
+
+          (copySelectData as CustomReactPortal).children = updateDom?.children || (oldDom?.children || "");
+          (copySelectData as CustomReactPortal).props = updateDom?.props || oldDom?.props;
+          break;
+        } else if (Array.isArray(item.children)) {
+          item.children = loopUpdateDom(item.children);
+        }
+      }
+
+      return doms;
+    }
+
+    const doms = selectData ? loopUpdateDom(copyDom) : copyDom;
+    setSelectData(copySelectData);
+    return doms;
   }
 
   // 查询节点
@@ -207,6 +251,7 @@ const useChangeComponent = () => {
     deleteSelectorDom,
     upSelectorDom,
     downSelectorDom,
+    updateSelectorDom,
   };
 };
 
