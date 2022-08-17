@@ -8,6 +8,7 @@ export interface CustomReactPortal extends ReactPortal {
     isCustomComponent?: boolean // 是否是组件
     tag?: string // 标签类型 主要用于组件
     isLoop?: boolean // 是否循环 使用key
+    deepSize?: number, // 子组件的数量
 }
 
 export type CustomReactPortalChildren = CustomReactPortal[] | string | number;

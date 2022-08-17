@@ -47,7 +47,7 @@ const useChangeComponent = () => {
           if (item.key === key && Array.isArray(item.children)) {
             item.children.push(iDom);
           } else if (Array.isArray(item.children)) {
-            insertSelectorDom(key, iDom, item.children);
+            item.children = insertSelectorDom(key, iDom, item.children);
           }
         }
       }
@@ -240,7 +240,8 @@ const useChangeComponent = () => {
   };
 
   // 查询父节点
-  const searchParentSelectorDom = (key: string): CustomReactPortal | null => {
+  const searchParentSelectorDom = (key: string | null): CustomReactPortal | null => {
+    if (!key) return null;
     const copyDom: CustomReactPortal[] = loadsh.cloneDeep(selectorDomData);
 
     let parentDom: CustomReactPortal | null = null; // 父级节点

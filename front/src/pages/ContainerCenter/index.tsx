@@ -1,7 +1,7 @@
 import React, {Fragment, useEffect, useRef, useState, MouseEvent, ReactElement, DragEvent} from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import store from "../../store";
-import { CustomReactPortal } from "../../store/module/home";
+import {CustomReactPortal, CustomReactPortalChildren} from "../../store/module/home";
 import "./index.less";
 import lodash from "lodash";
 import AntdUi from "../../components/Template/AntdUi";
@@ -9,10 +9,12 @@ import KingUi from "../../components/Template/KingUi";
 import Utils from "../../utils/Utils";
 import useChangeComponent from "../../hooks/useChangeComponent";
 import {DATA_COMPONENT_ACTIVE, DATA_COMPONENT_INSERT, DATA_COMPONENT_KEY} from "../../utils/_Constant";
+import CreateDom from "../../utils/CreateDom";
+import loadsh from "lodash";
 
 const ContainerCenter = () => {
   const kContainerCenterEle = useRef<HTMLDivElement>(null);
-  const {insertBrotherSelectorDom} = useChangeComponent();
+  const {insertSelectorDom, insertBrotherSelectorDom, searchSelectorDom, searchParentSelectorDom} = useChangeComponent();
   const [selectorDomData, setSselectorDomData] = useRecoilState(store.home.selectorDomData);
   const expandDom = useRecoilValue(store.home.expandDomData);
   const [selectData, setSelectData] = useRecoilState(store.home.selectData);
@@ -76,22 +78,25 @@ const ContainerCenter = () => {
   const dropContainerCenter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const name: string = e.dataTransfer.getData("componentName");
-    console.log("name", name);
     if (name) {
-      const insertDOM: CustomReactPortal = {
-        key: Utils.uuid(),
-        // @ts-ignore
-        type: AntdUi[name],
-        tag: name,
-        props: { [DATA_COMPONENT_ACTIVE]: "true" },
-        children: "我是拖拽的按钮",
-      };
+      const insertDOM: CustomReactPortal = CreateDom(name);
 
-      const newDom = insertBrotherSelectorDom(insertPositionDom, insertDOM, null, insertIsPrev);
+      const positionDom = insertPositionDom ? searchSelectorDom(insertPositionDom) : null;
+      let newDom = null;
+      if (positionDom && loadsh.isArray(positionDom.children)) {
+        const len = positionDom.children.length;
+        if (!withInsertParentDom(positionDom)) return;
+        newDom = insertSelectorDom(insertPositionDom, insertDOM);
+      } else {
+        const parentInfo = searchParentSelectorDom(insertPositionDom);
+        if (!withInsertParentDom(parentInfo)) return;
+        newDom = insertBrotherSelectorDom(insertPositionDom, insertDOM, null, insertIsPrev);
+      }
       clearDomStyle();
       setInsertDOMKey(insertDOM.key);
       setSselectorDomData(newDom);
       setSelectData(insertDOM);
+      setInsertPositionDom(null);
     }
   };
   const dragLeaveContainerCenter = (e: DragEvent<HTMLDivElement>) => {
@@ -104,9 +109,12 @@ const ContainerCenter = () => {
     const { pageX, pageY } = e.nativeEvent;
     const key =  (e.target as HTMLElement).getAttribute(DATA_COMPONENT_KEY);
     const componentHTML: HTMLElement | null = getComponentNode(e.target as HTMLElement);
+    // 获取选中的组件数据
+    let curComId:string|null = null;
+    // 插入方向
+    let isPrev = false;
 
     if (!!componentHTML) {
-        let isPrev = false;
       const {offsetLeft, offsetTop, offsetWidth,offsetHeight} = componentHTML;
       if((pageX - offsetLeft) > (offsetWidth / 2) || (pageY - offsetTop) > (offsetHeight / 2)) {
           isPrev = false;
@@ -114,17 +122,30 @@ const ContainerCenter = () => {
           isPrev = true;
       }
       // 获取选中的组件数据
-      const curComId = componentHTML.getAttribute(DATA_COMPONENT_KEY);
+      curComId = componentHTML.getAttribute(DATA_COMPONENT_KEY);
 
       clearDomStyle();
 
       componentHTML.setAttribute(DATA_COMPONENT_ACTIVE, "true");
       componentHTML.setAttribute(DATA_COMPONENT_INSERT, isPrev ? "top" : "bottom");
-
-      setInsertPositionDom(curComId);
-      setInsertIsPrev(isPrev); // 清空插入的标示
+    } else {
+      isPrev = false;
     }
+    setInsertPositionDom(curComId);
+    setInsertIsPrev(isPrev); // 清空插入的标示
   };
+
+  const withInsertParentDom = (parentInfo: CustomReactPortal | null) => {
+    if (!parentInfo) return true;
+    const len = (parentInfo.children as CustomReactPortal[]).length;
+    if (parentInfo.deepSize != null && len >= (parentInfo?.deepSize || 0)) {
+      console.log("%c 已超过子组件最大限制", "color: red");
+      clearDomStyle();
+      setInsertPositionDom(null);
+      return false;
+    }
+    return true;
+  }
 
   // 清除样式
   const clearDomStyle = () => {

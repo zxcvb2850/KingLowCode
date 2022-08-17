@@ -1,5 +1,5 @@
 import React from "react";
-import {Alert, Avatar, Badge, Button} from "antd";
+import {Alert, Avatar, Badge, Button, Layout} from "antd";
 import KButton from "../../components/Template/KingUi/KButton";
 import "./index.less";
 import AAlert from "../../components/Template/AntdUi/AButton";
@@ -68,6 +68,15 @@ const ContainerLeft = () => {
           <Badge>
             <Avatar size="large" shape="square"/>
           </Badge>
+        </div>
+        <div
+            className="item-component-example"
+            data-name="ALayout"
+            draggable
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+        >
+          <Layout>Layout</Layout>
         </div>
       </div>
     </div>
