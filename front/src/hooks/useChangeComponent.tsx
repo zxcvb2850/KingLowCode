@@ -1,3 +1,6 @@
+/**
+ * 节点控制，对节点的增删改查
+ * */
 import { useRecoilValue, useRecoilState } from "recoil";
 import store from "../store";
 import {CustomReactPortal, CustomReactPortalChildren} from "../store/module/home";
@@ -237,7 +240,43 @@ const useChangeComponent = () => {
   };
 
   // 查询父节点
-  const searchParentSelectorDom = () => {};
+  const searchParentSelectorDom = (key: string): CustomReactPortal | null => {
+    const copyDom: CustomReactPortal[] = loadsh.cloneDeep(selectorDomData);
+
+    let parentDom: CustomReactPortal | null = null; // 父级节点
+    type taskType = {
+      parent: CustomReactPortal|null
+      children: CustomReactPortal[] | string | number
+    }
+    const task: taskType[] = [{parent: null, children: copyDom}]; // dom 队列
+    let level = 1;
+
+    while (task.length) {
+      const first = task.shift();
+      if (first) {
+        const {parent, children} = first;
+        if (Array.isArray(children)) {
+          const len = children.length;
+          for (let i = 0; i < len; i++) {
+            const item = children[i];
+            if (item.key === key) {
+              parentDom = parent;
+              break;
+            }
+            task.push({parent: item, children: item.children});
+          }
+        }
+        if (parentDom) {
+          break;
+        }
+        level++;
+      } else {
+        break;
+      }
+    }
+
+    return parentDom;
+  };
 
   // 修改节点
   const editParentSelectorDom = () => {};
@@ -252,6 +291,8 @@ const useChangeComponent = () => {
     upSelectorDom,
     downSelectorDom,
     updateSelectorDom,
+    searchSelectorDom,
+    searchParentSelectorDom,
   };
 };
 

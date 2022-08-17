@@ -16,7 +16,7 @@ const ContainerRight = () => {
   const [selectorDomData, setSelectorDomData] = useRecoilState(store.home.selectorDomData);
   const [selectData, setSelectData] = useRecoilState(store.home.selectData);
 
-  const { insertSelectorDom, insertBrotherSelectorDom, deleteSelectorDom, upSelectorDom, downSelectorDom, updateSelectorDom: changeUpdateSelectorDom } = useChangeComponent();
+  const { insertSelectorDom, insertBrotherSelectorDom, deleteSelectorDom, upSelectorDom, downSelectorDom, updateSelectorDom: changeUpdateSelectorDom, searchSelectorDom, searchParentSelectorDom } = useChangeComponent();
 
   const [value, setValue] = useState<string>("");
 
@@ -118,6 +118,24 @@ const ContainerRight = () => {
     setSelectorDomData(newDom);
   }
 
+  // 查询当前节点
+  const handleSearchDom = () => {
+    console.log("-- 查询某个节点 --");
+    if(!selectData) return;
+
+    const searchDom = searchSelectorDom(selectData.key);
+    console.log("searchDom", searchDom);
+  }
+
+  // 查询父级节点
+  const handleSearchParentDom = () => {
+    console.log("-- 查询某个节点的父级节点 --");
+    if(!selectData) return;
+
+    const searchParentDom = searchParentSelectorDom(selectData.key);
+    console.log("searchParentDom", searchParentDom);
+  }
+
   // 修改 ICON
   const changeAlertIcon = (value: string) => {
     const copySelectData = loadsh.cloneDeep(selectData);
@@ -143,13 +161,13 @@ const ContainerRight = () => {
     <div className="k-container-right">
       right
       <KingUi.KButton onClick={handleInsertDom}>插入节点</KingUi.KButton>
-      <KingUi.KButton onClick={handleInsertBrotherDom}>
-        插入兄弟节点
-      </KingUi.KButton>
+      <KingUi.KButton onClick={handleInsertBrotherDom}>插入兄弟节点</KingUi.KButton>
       <KingUi.KButton onClick={handleDeleteDom}>删除节点</KingUi.KButton>
       <KingUi.KButton onClick={handleUpDom}>上移节点</KingUi.KButton>
       <KingUi.KButton onClick={handleDownDom}>下移节点</KingUi.KButton>
       <KingUi.KButton onClick={handleCopyDom}>复制节点</KingUi.KButton>
+      <KingUi.KButton onClick={handleSearchDom}>查询当前节点</KingUi.KButton>
+      <KingUi.KButton onClick={handleSearchParentDom}>查询父级节点</KingUi.KButton>
       {selectData?.key}
       {selectData ? (
         Utils.isDomBase(selectData) ? (
