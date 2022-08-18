@@ -1,12 +1,9 @@
 import React, {Fragment, useEffect, useRef, useState, MouseEvent, ReactElement, DragEvent} from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import store from "../../store";
-import {CustomReactPortal, CustomReactPortalChildren} from "../../store/module/home";
+import {CustomReactPortal} from "../../store/module/home";
 import "./index.less";
 import lodash from "lodash";
-import AntdUi from "../../components/Template/AntdUi";
-import KingUi from "../../components/Template/KingUi";
-import Utils from "../../utils/Utils";
 import useChangeComponent from "../../hooks/useChangeComponent";
 import {DATA_COMPONENT_ACTIVE, DATA_COMPONENT_INSERT, DATA_COMPONENT_KEY} from "../../utils/_Constant";
 import CreateDom from "../../utils/CreateDom";
@@ -32,8 +29,8 @@ const ContainerCenter = () => {
 
   }, [insertDOMKey]);
 
-  // 添加自定义 props 属性
-  const addClickProps = (itemProps: any, children: CustomReactPortal) => {
+  // 添加自定义 props 属性 custom 拖拽创建组件需要的自定义props
+  const addClickProps = (itemProps: any, custom?: any) => {
     return { ...itemProps };
   };
 
@@ -78,8 +75,12 @@ const ContainerCenter = () => {
   const dropContainerCenter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const name: string = e.dataTransfer.getData("componentName");
+    const ui: string = e.dataTransfer.getData("componentUi");
+    console.log("name", name);
+    console.log("ui", ui);
+
     if (name) {
-      const insertDOM: CustomReactPortal = CreateDom(name);
+      const insertDOM: CustomReactPortal = CreateDom(name, ui);
 
       const positionDom = insertPositionDom ? searchSelectorDom(insertPositionDom) : null;
       let newDom = null;
@@ -138,7 +139,7 @@ const ContainerCenter = () => {
   const withInsertParentDom = (parentInfo: CustomReactPortal | null) => {
     if (!parentInfo) return true;
     const len = (parentInfo.children as CustomReactPortal[]).length;
-    if (parentInfo.deepSize != null && len >= (parentInfo?.deepSize || 0)) {
+    if (parentInfo.custom.deepSize != null && len >= (parentInfo?.custom.deepSize || 0)) {
       console.log("%c 已超过子组件最大限制", "color: red");
       clearDomStyle();
       setInsertPositionDom(null);
@@ -181,13 +182,13 @@ const ContainerCenter = () => {
     for (let i = 0; i < len; i++) {
       const item = lodash.cloneDeep(dom[i]);
       item.props["key"] = `${item.key}`;
-      item.props[DATA_COMPONENT_KEY] = `${item.key}`;
-      item.props[DATA_COMPONENT_ACTIVE] = item.props.DATA_COMPONENT_ACTIVE || "";
+      item.custom[DATA_COMPONENT_KEY] = `${item.key}`;
+      item.custom[DATA_COMPONENT_ACTIVE] = item.custom.DATA_COMPONENT_ACTIVE || "";
 
       doms.push(
         React.createElement(
           item.type,
-          item?.tag === "Fragment" ? null : addClickProps(item.props, item),
+          item?.tag === "Fragment" ? null : addClickProps({...item.props, custom: item.custom}),
           renderItemChildren(item.children, item.isLoop)
         )
       );

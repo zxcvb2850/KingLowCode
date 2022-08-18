@@ -3,15 +3,21 @@ import {Layout} from "antd";
 
 interface LayoutFace {
     children: ReactNode
+    custom?: any,
 }
 
-const ALayout = ({children, ...props}: LayoutFace) => {
+const ALayout = ({children, custom, ...props}: LayoutFace) => {
+    props = {...custom, ...props};
     return <Layout {...props}>{children}</Layout>
 }
 
 export default {
     type: ALayout,
     tag: "ALayout",
-    props: {style: {minHeight: 50, padding: 20}},
+    ui: "antd",
+    props: {},
+    custom: {
+        style: {minHeight: 50, padding: 20},
+    },
     children: [],
 };

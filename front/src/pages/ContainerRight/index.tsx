@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, useEffect, useCallback, Fragment } from "react";
+import { useState, ChangeEvent, useEffect, useCallback } from "react";
 import { useRecoilState } from "recoil";
 import loadsh from "lodash";
 import store from "../../store";
@@ -7,10 +7,10 @@ import { CustomReactPortal } from "../../store/module/home";
 import Utils from "../../utils/Utils";
 import KingUi from "../../components/Template/KingUi";
 import useChangeComponent from "../../hooks/useChangeComponent";
-import {DATA_COMPONENT_ACTIVE} from "../../utils/_Constant";
 import { Select } from "antd";
 import { StepBackwardOutlined, StepForwardOutlined } from "@ant-design/icons";
 import React from "react";
+import CreateDom from "../../utils/CreateDom";
 
 const ContainerRight = () => {
   const [selectorDomData, setSelectorDomData] = useRecoilState(store.home.selectorDomData);
@@ -32,6 +32,20 @@ const ContainerRight = () => {
     setValue(val);
     changeValue(val);
   };
+
+  // 修改内容
+  const changeValueSrc = (e: ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    console.log("val", val);
+    // setValue(val);
+    // changeValue(val);
+    if (selectData) {
+      const doms = changeUpdateSelectorDom(selectData?.key, {props: {src: val}});
+      console.log("doms", doms);
+      setSelectorDomData(doms);
+    }
+
+  };
   // 提交修改内容
   const changeValue = useCallback(
     loadsh.debounce((value: string) => {
@@ -47,14 +61,7 @@ const ContainerRight = () => {
   const handleInsertDom = () => {
     console.log("-- 插入某个节点 --");
     const parentKey = selectData?.key || null;
-    const targetDom: CustomReactPortal = {
-      key: Utils.uuid(),
-      type: KingUi.KButton,
-      tag: "KButton",
-      isCustomComponent: true,
-      props: {},
-      children: "我是新插入的节点",
-    };
+    const targetDom: CustomReactPortal = CreateDom("AButton");
     const newDom = insertSelectorDom(parentKey, targetDom);
 
     setSelectorDomData(newDom);
@@ -62,14 +69,7 @@ const ContainerRight = () => {
   // 按钮 - 插入兄弟节点，当前节点之上或当前节点之下
   const handleInsertBrotherDom = () => {
     const brotherKey = selectData?.key || null;
-    const targetDom: CustomReactPortal = {
-      key: Utils.uuid(),
-      type: KingUi.KButton,
-      tag: "KButton",
-      isCustomComponent: true,
-      props: {},
-      children: "我是新插入的兄弟节点",
-    };
+    const targetDom: CustomReactPortal = CreateDom("AButton");
 
     const newDom = insertBrotherSelectorDom(
       brotherKey,
@@ -160,17 +160,16 @@ const ContainerRight = () => {
   return (
     <div className="k-container-right">
       right
-      <KingUi.KButton onClick={handleInsertDom}>插入节点</KingUi.KButton>
-      <KingUi.KButton onClick={handleInsertBrotherDom}>插入兄弟节点</KingUi.KButton>
-      <KingUi.KButton onClick={handleDeleteDom}>删除节点</KingUi.KButton>
-      <KingUi.KButton onClick={handleUpDom}>上移节点</KingUi.KButton>
-      <KingUi.KButton onClick={handleDownDom}>下移节点</KingUi.KButton>
-      <KingUi.KButton onClick={handleCopyDom}>复制节点</KingUi.KButton>
-      <KingUi.KButton onClick={handleSearchDom}>查询当前节点</KingUi.KButton>
-      <KingUi.KButton onClick={handleSearchParentDom}>查询父级节点</KingUi.KButton>
+      <KingUi.KButton.type onClick={handleInsertDom}>插入节点</KingUi.KButton.type>
+      <KingUi.KButton.type onClick={handleInsertBrotherDom}>插入兄弟节点</KingUi.KButton.type>
+      <KingUi.KButton.type onClick={handleDeleteDom}>删除节点</KingUi.KButton.type>
+      <KingUi.KButton.type onClick={handleUpDom}>上移节点</KingUi.KButton.type>
+      <KingUi.KButton.type onClick={handleDownDom}>下移节点</KingUi.KButton.type>
+      <KingUi.KButton.type onClick={handleCopyDom}>复制节点</KingUi.KButton.type>
+      <KingUi.KButton.type onClick={handleSearchDom}>查询当前节点</KingUi.KButton.type>
+      <KingUi.KButton.type onClick={handleSearchParentDom}>查询父级节点</KingUi.KButton.type>
       {selectData?.key}
       {selectData ? (
-        Utils.isDomBase(selectData) ? (
           <div>
             <div>
               <h4>组件 {selectData.tag}</h4>
@@ -178,6 +177,10 @@ const ContainerRight = () => {
             <div>
               <span>value: </span>
               <input type="text" value={value} onChange={changeValueContent} />
+            </div>
+            <div>
+              <span>src: </span>
+              <input type="text" onChange={changeValueSrc} />
             </div>
             <div>
               <span>icon: </span>
@@ -188,11 +191,6 @@ const ContainerRight = () => {
               </Select>
             </div>
           </div>
-        ) : (
-          <div>
-            <h4>组件 {selectData.tag}</h4>
-          </div>
-        )
       ) : (
         <div>
           <h4>请选择组件</h4>

@@ -1,22 +1,26 @@
-import { useRef } from "react";
-import useSetAttribute from "../../../../hooks/useSetAttribute";
+import {ReactNode} from "react";
 import "./index.less";
 
-const KAlert = ({
-  children,
-  ...props
-}: {
-  children: any;
-  [key: string]: any;
-}) => {
-  const ele = useRef<HTMLDivElement>(null);
-  useSetAttribute(ele, props);
+interface KAlertFace  {
+    children: ReactNode,
+    custom?:any,
+}
 
-  return (
-    <div ref={ele} className={`k-alert-wrap`}>
-      <span className="k-alert_content">{children}</span>
-    </div>
-  );
+const KAlert = ({children, custom, ...props}: KAlertFace) => {
+    props = {...custom, ...props};
+
+    return (
+        <div {...props} className={`k-alert-wrap`}>
+            <span className="k-alert_content">{children}</span>
+        </div>
+    );
 };
 
-export default KAlert;
+export default {
+    type: KAlert,
+    tag: "KAlert",
+    ui: "kingUi",
+    props: {},
+    custom: {},
+    children: "我是警告"
+};

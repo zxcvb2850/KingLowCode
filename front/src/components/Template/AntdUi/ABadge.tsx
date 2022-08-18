@@ -4,22 +4,19 @@ import {DATA_COMPONENT_ACTIVE, DATA_COMPONENT_KEY} from "../../../utils/_Constan
 
 interface BadgeFace {
     children: ReactNode
+    custom?: any
     [key: string]: any
 }
 
-const ABadge = ({children, ...props}: BadgeFace) => {
-
+const ABadge = ({children, custom, ...props}: BadgeFace) => {
     const customData:any = {};
-    if (props.wrapStyle) {
-        customData.style = props.wrapStyle;
-        delete props.wrapStyle;
+    if (custom) {
+        customData[DATA_COMPONENT_ACTIVE] = custom[DATA_COMPONENT_ACTIVE];
+        customData[DATA_COMPONENT_KEY] = custom[DATA_COMPONENT_KEY];
+        delete props.custom;
     }
-    customData[DATA_COMPONENT_ACTIVE] = props[DATA_COMPONENT_ACTIVE];
-    customData[DATA_COMPONENT_KEY] = props[DATA_COMPONENT_KEY];
-    delete props[DATA_COMPONENT_ACTIVE];
-    delete props[DATA_COMPONENT_KEY];
 
-    return <span {...customData}>
+    return <span {...customData} style={custom.wrapStyle}>
         <Badge {...props}>{children}</Badge>
     </span>
 }
@@ -27,14 +24,16 @@ const ABadge = ({children, ...props}: BadgeFace) => {
 export default {
     type: ABadge,
     tag: "ABadge",
-    props: {
+    ui: "antd",
+    props: {},
+    children: [],
+    custom: {
         wrapStyle: {
             display: "inline-block",
             minWidth: 50,
             minHeight: 50,
             backgroundColor: "rgba(0,0,0,.2)"
-        }
-    },
-    children: [],
-    deepSize: 1,
+        },
+        deepSize: 1,
+    }
 };

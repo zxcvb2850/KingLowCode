@@ -1,35 +1,36 @@
-import { ReactNode, useRef } from "react";
-import useSetAttribute from "../../../../hooks/useSetAttribute";
+import {ReactNode} from "react";
 import "./index.less";
 
 interface KButtonFace {
-  children?: ReactNode;
-  disabled?: boolean;
-  className?: string;
-  onClick?: () => void;
-  [key: string]: any;
+    children?: ReactNode;
+    disabled?: boolean;
+    className?: string;
+    onClick?: () => void;
+    custom?: any;
+
+    [key: string]: any;
 }
 
-const KButton = ({
-  children,
-  disabled,
-  className,
-  onClick,
-  ...props
-}: KButtonFace) => {
-  const ele = useRef<HTMLButtonElement>(null);
-  useSetAttribute(ele, props);
+const KButton = ({children, disabled, className, onClick, custom, ...props}: KButtonFace) => {
+    props = {...custom, ...props};
 
-  return (
-    <button
-      ref={ele}
-      disabled={disabled}
-      className={`k-button k-buton_default${className ? ` ${className}` : ""}`}
-      onClick={onClick ? onClick : undefined}
-    >
-      {children}
-    </button>
-  );
+    return (
+        <button
+            disabled={disabled}
+            className={`k-button k-buton_default${className ? ` ${className}` : ""}`}
+            onClick={onClick ? onClick : undefined}
+            {...props}
+        >
+            {children}
+        </button>
+    );
 };
 
-export default KButton;
+export default {
+    type: KButton,
+    tag: "KButton",
+    ui: "kingUi",
+    props: {},
+    custom: {},
+    children: "我是按钮",
+};
