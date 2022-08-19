@@ -11,8 +11,9 @@ import loadsh from "lodash";
 
 const ContainerCenter = () => {
   const kContainerCenterEle = useRef<HTMLDivElement>(null);
-  const {insertSelectorDom, insertBrotherSelectorDom, searchSelectorDom, searchParentSelectorDom} = useChangeComponent();
-  const [selectorDomData, setSselectorDomData] = useRecoilState(store.home.selectorDomData);
+  const preRenderDomKey = useRef<string | null>(null);
+  const {insertSelectorDom, insertBrotherSelectorDom, searchSelectorDom, searchParentSelectorDom, deleteSelectorDom} = useChangeComponent();
+  const [selectorDomData, setSelectorDomData] = useRecoilState(store.home.selectorDomData);
   const expandDom = useRecoilValue(store.home.expandDomData);
   const [selectData, setSelectData] = useRecoilState(store.home.selectData);
   const [insertPositionDom, setInsertPositionDom] = useState<string | null>(null);
@@ -76,8 +77,6 @@ const ContainerCenter = () => {
     e.preventDefault();
     const name: string = e.dataTransfer.getData("componentName");
     const ui: string = e.dataTransfer.getData("componentUi");
-    console.log("name", name);
-    console.log("ui", ui);
 
     if (name) {
       const insertDOM: CustomReactPortal = CreateDom(name, ui);
@@ -95,7 +94,8 @@ const ContainerCenter = () => {
       }
       clearDomStyle();
       setInsertDOMKey(insertDOM.key);
-      setSselectorDomData(newDom);
+      const delPreDom = deleteSelectorDom(preRenderDomKey.current, newDom);
+      setSelectorDomData(delPreDom);
       setSelectData(insertDOM);
       setInsertPositionDom(null);
     }
@@ -103,6 +103,8 @@ const ContainerCenter = () => {
   const dragLeaveContainerCenter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     console.log("containerCenter dragLeave", e);
+    // const delPreDom = deleteSelectorDom(preRenderDomKey.current);
+    // setSelectorDomData(delPreDom);
     clearDomStyle();
   };
   const dragOverContainerCenter = (e: DragEvent<HTMLDivElement>) => {
@@ -110,8 +112,9 @@ const ContainerCenter = () => {
     const { pageX, pageY } = e.nativeEvent;
     const key =  (e.target as HTMLElement).getAttribute(DATA_COMPONENT_KEY);
     const componentHTML: HTMLElement | null = getComponentNode(e.target as HTMLElement);
+
     // 获取选中的组件数据
-    let curComId:string|null = null;
+    let curComId:string | null = null;
     // 插入方向
     let isPrev = false;
 
@@ -132,6 +135,19 @@ const ContainerCenter = () => {
     } else {
       isPrev = false;
     }
+    // 插入临时占用的 DOM
+    const preRenderDom = CreateDom("PreRender", "virtual-dom");
+    preRenderDomKey.current = preRenderDom.key;
+    const delDom = deleteSelectorDom(preRenderDom.key);
+    const positionDom = curComId ? searchSelectorDom(curComId) : null;
+    let newDom: CustomReactPortal[] | null = null;
+    if (positionDom && loadsh.isArray(positionDom.children)) {
+      newDom = insertSelectorDom(curComId, preRenderDom, delDom);
+    } else {
+      newDom = insertBrotherSelectorDom(curComId, preRenderDom, delDom, isPrev);
+    }
+    setSelectorDomData(newDom);
+
     setInsertPositionDom(curComId);
     setInsertIsPrev(isPrev); // 清空插入的标示
   };
