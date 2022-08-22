@@ -20,6 +20,7 @@ const ContainerCenter = () => {
   const [selectData, setSelectData] = useRecoilState(store.home.selectData);
   const [insertPositionDom, setInsertPositionDom] = useState<string | null>(null);
   const [insertIsPrev, setInsertIsPrev] = useState<boolean>(false);
+  const [insertPosition, setInsertPosition] = useState<string>("bottom");
   const [insertDOMKey, setInsertDOMKey] = useState<string>("");
 
   useEffect(() => {
@@ -81,94 +82,66 @@ const ContainerCenter = () => {
     const ui: string = e.dataTransfer.getData("componentUi");
 
     if (name) {
-      /*const insertDOM: CustomReactPortal = CreateDom(name, ui);
+      const delDom = deleteSelectorDom(preRenderDomKey.current);
+
+      const insertDOM: CustomReactPortal = CreateDom(name, ui);
 
       const positionDom = insertPositionDom ? searchSelectorDom(insertPositionDom) : null;
-      let newDom = null;
-      if (positionDom && loadsh.isArray(positionDom.children)) {
-        const len = positionDom.children.length;
-        if (!withInsertParentDom(positionDom)) return;
-        newDom = insertSelectorDom(insertPositionDom, insertDOM);
+      let newDom = loadsh.cloneDeep(delDom);
+      if (insertPosition === "top") {
+        newDom = insertBrotherSelectorDom(insertPositionDom, insertDOM, delDom, true);
+      } else if (insertPosition === "center") {
+        if (withInsertParentDom(positionDom)) {
+          newDom = insertSelectorDom(insertPositionDom, insertDOM, delDom);
+        }
       } else {
-        const parentInfo = searchParentSelectorDom(insertPositionDom);
-        if (!withInsertParentDom(parentInfo)) return;
-        newDom = insertBrotherSelectorDom(insertPositionDom, insertDOM, null, insertIsPrev);
+        newDom = insertBrotherSelectorDom(insertPositionDom, insertDOM, delDom, false);
       }
-      clearDomStyle();
-      setInsertDOMKey(insertDOM.key);
-      const delPreDom = deleteSelectorDom(preRenderDomKey.current, newDom);
-      setSelectorDomData(delPreDom);
-      setSelectData(insertDOM);
-      setInsertPositionDom(null);*/
-      const createDOM: CustomReactPortal = CreateDom(name, ui);
-      let newDom = null;
-      const delDom = deleteSelectorDom(preRenderDomKey.current);
-      newDom = insertSelectorDom(null, createDOM, delDom);
+
+      setInsertDOMKey(insertDOM.key); // 选中的dom key
+      setSelectData(insertDOM); // 选中的dom
       setSelectorDomData(newDom);
+      setInsertPositionDom(null);
       isPreRenderDom.current = false;
+
+      clearDomStyle();
     }
   };
   const dragLeaveContainerCenter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     console.log("containerCenter dragLeave", e);
-    // const delPreDom = deleteSelectorDom(preRenderDomKey.current);
-    // setSelectorDomData(delPreDom);
-    clearDomStyle();
+    const {offsetX, offsetY} = e.nativeEvent;
+    if (offsetX < 0 || offsetY < 0) {
+      // todo -------
+      // const delPreDom = deleteSelectorDom(preRenderDomKey.current);
+      // setSelectorDomData(delPreDom);
+      // clearDomStyle();
+    }
   };
   const dragOverContainerCenter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    /*const { pageX, pageY } = e.nativeEvent;
-    const key =  (e.target as HTMLElement).getAttribute(DATA_COMPONENT_KEY);
-    const componentHTML: HTMLElement | null = getComponentNode(e.target as HTMLElement);
-
-    // 获取选中的组件数据
-    let curComId:string | null = null;
-    // 插入方向
-    let isPrev = false;
-
-    if (!!componentHTML) {
-      const {offsetLeft, offsetTop, offsetWidth,offsetHeight} = componentHTML;
-      if((pageX - offsetLeft) > (offsetWidth / 2) || (pageY - offsetTop) > (offsetHeight / 2)) {
-          isPrev = false;
-      } else {
-          isPrev = true;
-      }
-      // 获取选中的组件数据
-      curComId = componentHTML.getAttribute(DATA_COMPONENT_KEY);
-
-      clearDomStyle();
-
-      componentHTML.setAttribute(DATA_COMPONENT_ACTIVE, "true");
-      componentHTML.setAttribute(DATA_COMPONENT_INSERT, isPrev ? "top" : "bottom");
-    } else {
-      isPrev = false;
-    }
-    // 插入临时占用的 DOM
-    const preRenderDom = CreateDom("PreRender", "virtual-dom");
-    preRenderDomKey.current = preRenderDom.key;
-    const delDom = deleteSelectorDom(preRenderDom.key);
-    const positionDom = curComId ? searchSelectorDom(curComId) : null;
-    let newDom: CustomReactPortal[] | null = null;
-    if (positionDom && loadsh.isArray(positionDom.children)) {
-      newDom = insertSelectorDom(curComId, preRenderDom, delDom);
-    } else {
-      newDom = insertBrotherSelectorDom(curComId, preRenderDom, delDom, isPrev);
-    }
-    setSelectorDomData(newDom);
-
-    setInsertPositionDom(curComId);
-    setInsertIsPrev(isPrev); // 清空插入的标示*/
 
     const {offsetX, offsetY} = e.nativeEvent;
 
-    // console.log("eventOffset", eventOffset);
-    // console.log("offsetY.current", offsetY.current);
-    if (mouseOffsetY.current === offsetY) return
+    if (mouseOffsetY.current === offsetY) return;
     else mouseOffsetY.current = offsetY;
 
     const componentHTML: HTMLElement | null = getComponentNode(e.target as HTMLElement);
+    const curComKey = componentHTML?.getAttribute(DATA_COMPONENT_KEY) || null
 
-    if (!isPreRenderDom.current && componentHTML) {
+    // 此时鼠标在创建的占位 DOM 上，所以无需再动态创建
+    if (preRenderDomKey.current && curComKey === preRenderDomKey.current) return;
+
+    // 创建虚拟节点
+    const preRenderDom = CreateDom("PreRender", "virtual-dom");
+    preRenderDomKey.current = preRenderDom.key;
+    let newDom = null;
+
+    // 插入前先删除占位节点，确保只有一个虚拟节点
+    if (isPreRenderDom.current) {
+      newDom  = deleteSelectorDom(preRenderDomKey.current);
+    }
+    if (componentHTML) {
       const {offsetWidth, offsetHeight} = componentHTML;
       /*----------width-----------*/
       const leftWidth = offsetWidth / 3;
@@ -178,52 +151,66 @@ const ContainerCenter = () => {
       const topHeight = offsetHeight / 3;
       const centerHeight = offsetHeight * 2 / 3;
       const bottomHeight = offsetHeight - topHeight - centerHeight;
-      // 创建虚拟节点
-      const preRenderDom = CreateDom("PreRender", "virtual-dom");
 
-      if (offsetX < leftWidth && offsetY < topHeight) {
-        preRenderDom.props.style = {width: offsetWidth, height: topHeight};
+      let iPosition:string = "bottom"; // top center bottom
+      /*if (offsetX < leftWidth && offsetY < topHeight) {
         // 插入兄弟上一节点
+        console.log("上");
+        iPosition = "top";
       } else if ((offsetX > leftWidth && offsetX < centerWidth) && (offsetY > topHeight && offsetY < centerHeight)) {
-        preRenderDom.props.style = {marginTop: topHeight, width: centerWidth - offsetWidth, height: centerHeight - topHeight};
         // 插入子节点
-      } else if ((offsetX >centerWidth && offsetX < offsetWidth)&&(offsetY > centerWidth && offsetY < offsetHeight)) {
+        console.log("中");
+        iPosition = "center";
+      } else if ((offsetX > centerWidth && offsetX < offsetWidth) && (offsetY > centerHeight && offsetY < offsetHeight)) {
         // 插入兄弟下一节点
-        preRenderDom.props.style = {marginTop: centerHeight, width: rightWidth - centerWidth, height: bottomHeight - centerHeight};
+        console.log("下");
+        iPosition = "bottom";
+      }*/
+
+      if (offsetY < topHeight) {
+        // 插入兄弟上一节点
+        iPosition = "top";
+      } else if ((offsetY > topHeight && offsetY < centerHeight)) {
+        // 插入子节点
+        iPosition = "center";
+      } else if ((offsetY > centerHeight && offsetY < offsetHeight)) {
+        // 插入兄弟下一节点
+        iPosition = "bottom";
       }
-      console.log("preRenderDom", preRenderDom);
-      const newDom = insertBrotherSelectorDom(null, preRenderDom);
-      setSelectorDomData(newDom);
-      isPreRenderDom.current = true;
-    } else {
 
-    }
-
-
-    console.log("offsetX", offsetX);
-    console.log("offsetY", offsetY);
-    console.log("componentHTML", componentHTML);
-    console.log("e", e);
-    /*const curComKey = componentHTML?.getAttribute(DATA_COMPONENT_KEY) || null;
-    let newDom: CustomReactPortal[] | null = null;
-    const preRenderDom = CreateDom("PreRender", "virtual-dom");
-    preRenderDomKey.current = preRenderDom.key;
-    if (!isPreRenderDom.current) {
-      if (componentHTML) {
-        newDom = insertSelectorDom(curComKey, preRenderDom);
+      if (iPosition === "top") {
+        setInsertPosition("top");
+        setInsertIsPrev(true);
+        newDom = insertBrotherSelectorDom(curComKey, preRenderDom, newDom, true);
+      } else if (iPosition === "center") {
+        const positionDom = curComKey ? searchSelectorDom(curComKey) : null;
+        if (positionDom && loadsh.isArray(positionDom.children)) {
+          setInsertPosition("center");
+          newDom = insertSelectorDom(curComKey, preRenderDom, newDom);
+        } else {
+          setInsertPosition("bottom");
+          setInsertIsPrev(false);
+          newDom = insertBrotherSelectorDom(curComKey, preRenderDom, newDom, false);
+        }
       } else {
-        newDom = insertBrotherSelectorDom(null, preRenderDom);
+        setInsertPosition("bottom");
+        setInsertIsPrev(false);
+        newDom = insertBrotherSelectorDom(curComKey, preRenderDom, newDom);
       }
-      setSelectorDomData(newDom);
+    } else {
+      setInsertPosition("bottom");
+      setInsertIsPrev(false);
+      newDom = insertBrotherSelectorDom(curComKey, preRenderDom, newDom);
     }
-    isPreRenderDom.current = true;*/
-
+    setSelectorDomData(newDom);
+    setInsertPositionDom(curComKey);
+    isPreRenderDom.current = true;
   };
 
   const withInsertParentDom = (parentInfo: CustomReactPortal | null) => {
     if (!parentInfo) return true;
     const len = (parentInfo.children as CustomReactPortal[]).length;
-    if (parentInfo.custom.deepSize != null && len >= (parentInfo?.custom.deepSize || 0)) {
+    if (parentInfo.custom.deepSize != null && (len - 1) >= (parentInfo?.custom.deepSize || 0)) {
       console.log("%c 已超过子组件最大限制", "color: red");
       clearDomStyle();
       setInsertPositionDom(null);

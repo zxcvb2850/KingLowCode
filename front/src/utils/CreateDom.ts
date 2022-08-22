@@ -14,8 +14,6 @@ interface CreateDomFace {
 }
 
 const CreateDom: CreateDomFace = (name, ui) => {
-    console.log("name", name);
-    console.log("ui", ui);
     let componentUi:any = "";
     switch (ui) {
         case "antd":
@@ -35,7 +33,6 @@ const CreateDom: CreateDomFace = (name, ui) => {
     const componentInfo = loadsh.cloneDeep(dom);
     // 此处的 componentInfo key 只有临时创建的站位 DOM 使用的
     const key = componentInfo?.key || Utils.uuid();
-    console.log("componentInfo", componentInfo);
     // @ts-ignore
     const type = componentInfo.type;
     const tag = componentInfo.tag;

@@ -23,7 +23,7 @@ const useChangeComponent = () => {
   const insertSelectorDom = (
     key: string | null,
     iDom: CustomReactPortal,
-    doms?: CustomReactPortal[]
+    doms?: CustomReactPortal[] | null
   ): CustomReactPortal[] => {
     doms = doms || selectorDomData;
     const copyDom: CustomReactPortal[] = loadsh.cloneDeep(doms);

@@ -27,7 +27,6 @@ export const selectorDomData = selector({
   key: "selectorDomData",
   get: ({get}) => get(domData),
   set: ({set}, newValue) => {
-    console.log("newValue", newValue);
     set(expandDomData, expandTree(newValue as CustomReactPortal[]));
     return set(domData, newValue);
   }
