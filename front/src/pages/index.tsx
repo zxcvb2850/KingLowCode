@@ -4,6 +4,7 @@ import ContainerCenter from './ContainerCenter';
 import ContainerRight from './ContainerRight';
 import useInitComponents from '../hooks/useInitComponents';
 import {Button, Layout, Divider} from 'antd';
+import SelectDomRender from "../components/SelectDomRender";
 
 const {Header, Sider, Content, Footer} = Layout;
 
@@ -23,7 +24,10 @@ function App(props: any) {
                 </Header>
                 <Layout>
                     <Sider className="container-left-wrap"><ContainerLeft/></Sider>
-                    <Content className="container-content-wrap"><ContainerCenter/></Content>
+                    <Content className="container-content-wrap">
+                        <ContainerCenter/>
+                        <SelectDomRender/>
+                    </Content>
                     <Sider className="container-right-wrap"><ContainerRight/></Sider>
                 </Layout>
                 <Footer className="footer">@king</Footer>

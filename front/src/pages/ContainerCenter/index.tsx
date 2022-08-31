@@ -5,9 +5,10 @@ import {CustomReactPortal} from "../../store/module/home";
 import "./index.less";
 import lodash from "lodash";
 import useChangeComponent from "../../hooks/useChangeComponent";
-import {DATA_COMPONENT_ACTIVE, DATA_COMPONENT_INSERT, DATA_COMPONENT_KEY} from "../../utils/_Constant";
+import {DATA_COMPONENT_INSERT, DATA_COMPONENT_KEY} from "../../utils/_Constant";
 import CreateDom from "../../utils/CreateDom";
 import loadsh from "lodash";
+import useUpdateSelectDomInfo from "../../hooks/useUpdateSelectDomInfo";
 
 const ContainerCenter = () => {
   const kContainerCenterEle = useRef<HTMLDivElement>(null);
@@ -18,6 +19,7 @@ const ContainerCenter = () => {
   const [selectorDomData, setSelectorDomData] = useRecoilState(store.home.selectorDomData);
   const expandDom = useRecoilValue(store.home.expandDomData);
   const [selectData, setSelectData] = useRecoilState(store.home.selectData);
+  const updateSelectDomInfo = useUpdateSelectDomInfo();
   const [insertPositionDom, setInsertPositionDom] = useState<string | null>(null);
   const [insertIsPrev, setInsertIsPrev] = useState<boolean>(false);
   const [insertPosition, setInsertPosition] = useState<string>("bottom");
@@ -26,8 +28,7 @@ const ContainerCenter = () => {
   useEffect(() => {
     // 拖拽插入的节点，默认选中
     if (insertDOMKey) {
-      const dom = document.querySelector(`[${DATA_COMPONENT_KEY}='${insertDOMKey}']`);
-      dom?.setAttribute(DATA_COMPONENT_ACTIVE, "true");
+      updateSelectDomInfo(insertDOMKey);
       setInsertDOMKey("");
     }
 
@@ -40,7 +41,7 @@ const ContainerCenter = () => {
 
   // 获取 DOM 当前点击或父级可点击的DOM
   const getComponentNode = (node: HTMLElement): HTMLElement | null => {
-    if (node && node.getAttribute(DATA_COMPONENT_ACTIVE) !== null)
+    if (node && node.getAttribute(DATA_COMPONENT_KEY) !== null)
       return node;
     else {
       if (node.parentElement) return getComponentNode(node.parentElement);
@@ -58,18 +59,16 @@ const ContainerCenter = () => {
     if (!!componentHTML) {
       // 获取选中的组件数据
       const curComId = componentHTML.getAttribute(DATA_COMPONENT_KEY);
-      // 添加选中效果
-      let list = document.querySelectorAll(`[${DATA_COMPONENT_ACTIVE}="true"]`);
-      list.forEach((el) => {
-        el.setAttribute(DATA_COMPONENT_ACTIVE, "");
-      });
 
       let curSelectData: CustomReactPortal | null = null;
       if (curComId && curComId !== selectData?.key) {
-        componentHTML.setAttribute(DATA_COMPONENT_ACTIVE, "true");
-
         curSelectData = findSelectDom(curComId);
-        setSelectData(curSelectData);
+
+        // 选中
+        updateSelectDomInfo(componentHTML);
+      } else {
+        // 未选中
+        updateSelectDomInfo(null);
       }
       setSelectData(curSelectData);
     }
@@ -221,11 +220,7 @@ const ContainerCenter = () => {
 
   // 清除样式
   const clearDomStyle = () => {
-    // 添加选中效果
-    const list = document.querySelectorAll(`[${DATA_COMPONENT_ACTIVE}="true"]`);
-    list.forEach((ele) => {
-      ele.setAttribute(DATA_COMPONENT_ACTIVE, "");
-    });
+    updateSelectDomInfo(null);
 
     const insertTopEle = document.querySelector(`[${DATA_COMPONENT_INSERT}="top"]`);
     const insertBottomEle = document.querySelector(`[${DATA_COMPONENT_INSERT}="bottom"]`);
@@ -254,7 +249,6 @@ const ContainerCenter = () => {
       const item = lodash.cloneDeep(dom[i]);
       item.props["key"] = `${item.key}`;
       item.custom[DATA_COMPONENT_KEY] = `${item.key}`;
-      item.custom[DATA_COMPONENT_ACTIVE] = item.custom.DATA_COMPONENT_ACTIVE || "";
 
       doms.push(
         React.createElement(

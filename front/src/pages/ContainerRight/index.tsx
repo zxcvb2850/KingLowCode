@@ -11,10 +11,12 @@ import { Select } from "antd";
 import { StepBackwardOutlined, StepForwardOutlined } from "@ant-design/icons";
 import React from "react";
 import CreateDom from "../../utils/CreateDom";
+import useUpdateSelectDomInfo from "../../hooks/useUpdateSelectDomInfo";
 
 const ContainerRight = () => {
   const [selectorDomData, setSelectorDomData] = useRecoilState(store.home.selectorDomData);
   const [selectData, setSelectData] = useRecoilState(store.home.selectData);
+  const updateSelectDomInfo = useUpdateSelectDomInfo();
 
   const { insertSelectorDom, insertBrotherSelectorDom, deleteSelectorDom, upSelectorDom, downSelectorDom, updateSelectorDom: changeUpdateSelectorDom, searchSelectorDom, searchParentSelectorDom } = useChangeComponent();
 
@@ -36,12 +38,8 @@ const ContainerRight = () => {
   // 修改内容
   const changeValueSrc = (e: ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    console.log("val", val);
-    // setValue(val);
-    // changeValue(val);
     if (selectData) {
       const doms = changeUpdateSelectorDom(selectData?.key, {props: {src: val}});
-      console.log("doms", doms);
       setSelectorDomData(doms);
     }
 
@@ -52,6 +50,11 @@ const ContainerRight = () => {
       if (selectData) {
         const doms = changeUpdateSelectorDom(selectData.key,{children: value});
         setSelectorDomData(doms);
+
+        // 更新选中的组件，由于更新异步执行，所以添加延迟对象
+        setTimeout(() => {
+          updateSelectDomInfo(selectData.key);
+        }, 30);
       }
     }, 300),
     [selectData]

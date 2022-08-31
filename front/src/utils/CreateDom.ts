@@ -5,7 +5,6 @@ import {CustomReactPortal, CustomReactPortalChildren} from "../store/module/home
 import Utils from "./Utils";
 import AntdUi from "../components/Template/AntdUi";
 import KingUi from "../components/Template/KingUi";
-import {DATA_COMPONENT_ACTIVE} from "./_Constant";
 import PreRender from "../components/PreRender";
 import loadsh from "lodash";
 
@@ -37,7 +36,6 @@ const CreateDom: CreateDomFace = (name, ui) => {
     const type = componentInfo.type;
     const tag = componentInfo.tag;
     const custom = componentInfo?.custom || {};
-    custom[DATA_COMPONENT_ACTIVE] =  "true";
     const props = {...componentInfo.props};
 
     const children: CustomReactPortalChildren = componentInfo.children;

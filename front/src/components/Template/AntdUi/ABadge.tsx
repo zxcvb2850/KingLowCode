@@ -1,6 +1,6 @@
 import {Badge} from "antd";
 import {ReactNode} from "react";
-import {DATA_COMPONENT_ACTIVE, DATA_COMPONENT_KEY} from "../../../utils/_Constant";
+import { DATA_COMPONENT_KEY} from "../../../utils/_Constant";
 
 interface BadgeFace {
     children: ReactNode
@@ -11,7 +11,6 @@ interface BadgeFace {
 const ABadge = ({children, custom, ...props}: BadgeFace) => {
     const customData:any = {};
     if (custom) {
-        customData[DATA_COMPONENT_ACTIVE] = custom[DATA_COMPONENT_ACTIVE];
         customData[DATA_COMPONENT_KEY] = custom[DATA_COMPONENT_KEY];
         delete props.custom;
     }

@@ -11,9 +11,6 @@
         box-shadow: none;
     }
 
-    [data-component-active="true"] {
-        box-shadow: inset 0px 0px 0px 1px pink!important;
-    }
     [data-component-active]:hover {
         box-shadow: inset 0px 0px 0px 1px pink!important;
     }
@@ -28,5 +25,17 @@
     }
     [data-component-insert="right"] {
         box-shadow: inset -1px 0px 0px 0px rgb(0, 0, 0)!important;
+    }
+    [data-component-prevent-select="true"] {
+        display: block;
+        position: relative;
+        &:after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+        }
     }
 }
