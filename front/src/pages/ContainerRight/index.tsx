@@ -7,11 +7,11 @@ import { CustomReactPortal } from "../../store/module/home";
 import Utils from "../../utils/Utils";
 import KingUi from "../../components/Template/KingUi";
 import useChangeComponent from "../../hooks/useChangeComponent";
-import { Select } from "antd";
-import { StepBackwardOutlined, StepForwardOutlined } from "@ant-design/icons";
+import {ArrowDownOutlined, ArrowUpOutlined, CopyOutlined, StepBackwardOutlined, StepForwardOutlined } from "@ant-design/icons";
 import React from "react";
 import CreateDom from "../../utils/CreateDom";
 import useUpdateSelectDomInfo from "../../hooks/useUpdateSelectDomInfo";
+import { Popover } from "antd";
 
 const ContainerRight = () => {
   const [selectorDomData, setSelectorDomData] = useRecoilState(store.home.selectorDomData);
@@ -90,6 +90,11 @@ const ContainerRight = () => {
     const newDom = deleteSelectorDom(parentKey);
     setSelectorDomData(newDom);
     setSelectData(null);
+
+      // 更新选中的组件，由于更新异步执行，所以添加延迟对象
+      setTimeout(() => {
+          updateSelectDomInfo(null);
+      }, 30);
   };
 
   // 按钮 - 上移节点
@@ -100,6 +105,11 @@ const ContainerRight = () => {
     const key = selectData.key;
     const newDom = upSelectorDom(key);
     setSelectorDomData(newDom);
+
+      // 更新选中的组件，由于更新异步执行，所以添加延迟对象
+      setTimeout(() => {
+          updateSelectDomInfo(selectData.key);
+      }, 30);
   }
 
   // 按钮 - 下移节点
@@ -109,6 +119,11 @@ const ContainerRight = () => {
     const key = selectData.key;
     const newDom = downSelectorDom(key);
     setSelectorDomData(newDom);
+
+      // 更新选中的组件，由于更新异步执行，所以添加延迟对象
+      setTimeout(() => {
+          updateSelectDomInfo(selectData.key);
+      }, 30);
   }
 
   // 复制节点
@@ -119,6 +134,11 @@ const ContainerRight = () => {
     copyDom.key = Utils.uuid();
     const newDom = insertBrotherSelectorDom(selectData.key, copyDom);
     setSelectorDomData(newDom);
+
+      // 更新选中的组件，由于更新异步执行，所以添加延迟对象
+      setTimeout(() => {
+          updateSelectDomInfo(selectData.key);
+      }, 30);
   }
 
   // 查询当前节点
@@ -162,16 +182,31 @@ const ContainerRight = () => {
 
   return (
     <div className="k-container-right">
-      right
-      <KingUi.KButton.type onClick={handleInsertDom}>插入节点</KingUi.KButton.type>
-      <KingUi.KButton.type onClick={handleInsertBrotherDom}>插入兄弟节点</KingUi.KButton.type>
-      <KingUi.KButton.type onClick={handleDeleteDom}>删除节点</KingUi.KButton.type>
-      <KingUi.KButton.type onClick={handleUpDom}>上移节点</KingUi.KButton.type>
-      <KingUi.KButton.type onClick={handleDownDom}>下移节点</KingUi.KButton.type>
-      <KingUi.KButton.type onClick={handleCopyDom}>复制节点</KingUi.KButton.type>
-      <KingUi.KButton.type onClick={handleSearchDom}>查询当前节点</KingUi.KButton.type>
-      <KingUi.KButton.type onClick={handleSearchParentDom}>查询父级节点</KingUi.KButton.type>
-      {selectData?.key}
+      <div className="component-attribute-operation">
+          {selectData?.key}
+      </div>
+      <div className="component-dom-operation">
+        <KingUi.KButton.type onClick={handleInsertDom}>插入节点</KingUi.KButton.type>
+        <KingUi.KButton.type onClick={handleInsertBrotherDom}>插入兄弟节点</KingUi.KButton.type>
+        <KingUi.KButton.type onClick={handleDeleteDom}>删除节点</KingUi.KButton.type>
+        <KingUi.KButton.type onClick={handleUpDom}>上移节点</KingUi.KButton.type>
+        <KingUi.KButton.type onClick={handleDownDom}>下移节点</KingUi.KButton.type>
+        <KingUi.KButton.type onClick={handleCopyDom}>复制节点</KingUi.KButton.type>
+        <KingUi.KButton.type onClick={handleSearchDom}>查询当前节点</KingUi.KButton.type>
+        <KingUi.KButton.type onClick={handleSearchParentDom}>查询父级节点</KingUi.KButton.type>
+
+          <Popover content="复制">
+              <CopyOutlined className="operation-icon" onClick={handleUpDom}/>
+          </Popover>
+          <Popover content="上移">
+              <ArrowUpOutlined className="operation-icon" onClick={handleUpDom}/>
+          </Popover>
+          <Popover content="下移">
+              <ArrowDownOutlined className="operation-icon" onClick={handleUpDom}/>
+          </Popover>
+      </div>
+
+      {/*{selectData?.key}
       {selectData ? (
           <div>
             <div>
@@ -198,7 +233,7 @@ const ContainerRight = () => {
         <div>
           <h4>请选择组件</h4>
         </div>
-      )}
+      )}*/}
     </div>
   );
 };
