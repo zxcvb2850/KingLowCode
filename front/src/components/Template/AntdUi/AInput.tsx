@@ -6,7 +6,7 @@ interface AInputFace {
 }
 
 const AInput = ({children, custom, ...props}: AInputFace) => {
-    return <span {...custom} data-component-prevent-select="true">
+    return <span {...custom}>
         <Input {...props} value={children}/>
     </span>
 }
@@ -18,6 +18,8 @@ export default {
     props: {
         placeholder: "请输入内容",
     },
-    custom: {},
+    custom: {
+        "data-component-prevent-select": "true",
+    },
     children: undefined,
 };

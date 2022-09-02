@@ -44,6 +44,7 @@ const useChangeComponent = () => {
         const len = copyDom.length;
         for (let i = 0; i < len; i++) {
           const item = copyDom[i];
+          console.log("insert", key, find, item);
           if (item.key === key && Array.isArray(item.children)) {
             item.children.push(iDom);
           } else if (Array.isArray(item.children)) {
@@ -53,6 +54,7 @@ const useChangeComponent = () => {
       }
     }
 
+    console.log("copyDom", copyDom);
     return copyDom;
   };
   /**

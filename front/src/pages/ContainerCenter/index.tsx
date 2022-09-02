@@ -236,8 +236,8 @@ const ContainerCenter = () => {
 
   // 渲染组件
   const renderItemChildren = (
-    dom: CustomReactPortal[] | string | number,
-    isLoop = false
+      dom: CustomReactPortal[] | string | number,
+      isLoop = false
   ): ReactElement | string | number | null => {
     if (!dom) return null;
     if (typeof dom === "string" || typeof dom === "number") {
@@ -251,27 +251,27 @@ const ContainerCenter = () => {
       item.custom[DATA_COMPONENT_KEY] = `${item.key}`;
 
       doms.push(
-        React.createElement(
-          item.type,
-          item?.tag === "Fragment" ? null : addClickProps({...item.props, custom: item.custom}),
-          renderItemChildren(item.children, item.isLoop)
-        )
+          React.createElement(
+              item.type,
+              item?.tag === "Fragment" ? null : addClickProps({...item.props, custom: item.custom}),
+              renderItemChildren(item.children, item.isLoop)
+          )
       );
     }
     return React.createElement(Fragment, null, ...(isLoop ? [doms] : doms));
   };
 
   return (
-    <div
-      ref={kContainerCenterEle}
-      className="k-container-center"
-      onDrop={dropContainerCenter}
-      onDragLeave={dragLeaveContainerCenter}
-      onDragOver={dragOverContainerCenter}
-      onClick={clickContainerCenter}
-    >
-      {renderItemChildren(selectorDomData)}
-    </div>
+      <div
+          ref={kContainerCenterEle}
+          className="k-container-center"
+          onDrop={dropContainerCenter}
+          onDragLeave={dragLeaveContainerCenter}
+          onDragOver={dragOverContainerCenter}
+          onClick={clickContainerCenter}
+      >
+        {renderItemChildren(selectorDomData)}
+      </div>
   );
 };
 

@@ -5,13 +5,14 @@ import store from "../../store";
 import "./index.less";
 import { CustomReactPortal } from "../../store/module/home";
 import Utils from "../../utils/Utils";
-import KingUi from "../../components/Template/KingUi";
 import useChangeComponent from "../../hooks/useChangeComponent";
-import {ArrowDownOutlined, ArrowUpOutlined, CopyOutlined, StepBackwardOutlined, StepForwardOutlined } from "@ant-design/icons";
+import {ArrowDownOutlined, ArrowUpOutlined, CopyOutlined, DeleteOutlined, StepBackwardOutlined, StepForwardOutlined } from "@ant-design/icons";
 import React from "react";
 import CreateDom from "../../utils/CreateDom";
 import useUpdateSelectDomInfo from "../../hooks/useUpdateSelectDomInfo";
-import { Popover } from "antd";
+import {Empty, Input, Modal, Popover, Tabs} from "antd";
+
+const {TabPane} = Tabs;
 
 const ContainerRight = () => {
   const [selectorDomData, setSelectorDomData] = useRecoilState(store.home.selectorDomData);
@@ -86,15 +87,28 @@ const ContainerRight = () => {
   const handleDeleteDom = () => {
     console.log("-- 删除某个节点 --");
     if (!selectData) return;
-    const parentKey = selectData.key;
-    const newDom = deleteSelectorDom(parentKey);
-    setSelectorDomData(newDom);
-    setSelectData(null);
 
-      // 更新选中的组件，由于更新异步执行，所以添加延迟对象
-      setTimeout(() => {
-          updateSelectDomInfo(null);
-      }, 30);
+    Modal.confirm({
+      title: "警告",
+      content: "确定删除该控件吗?",
+      okText: "确定",
+      cancelText: "取消",
+      onOk: () => {
+        return new Promise(resolve => {
+          const parentKey = selectData.key;
+          const newDom = deleteSelectorDom(parentKey);
+          setSelectorDomData(newDom);
+          setSelectData(null);
+
+          // 更新选中的组件，由于更新异步执行，所以添加延迟对象
+          setTimeout(() => {
+            updateSelectDomInfo(null);
+
+            resolve(true);
+          }, 30);
+        })
+      },
+    })
   };
 
   // 按钮 - 上移节点
@@ -180,31 +194,52 @@ const ContainerRight = () => {
     setSelectorDomData([copySelectData as CustomReactPortal]);
   }
 
+  // 属性相关
+  const renderComponentType = () => {
+      const curCom = searchSelectorDom(selectData!.key);
+      if (typeof curCom?.children === "object") {
+
+      } else {
+          return <li><span>内容:</span><Input defaultValue={curCom?.children}/></li>;
+      }
+    return curCom?.children;
+  }
+
+  // 样式相关
+  const renderComponentStyle = () => {
+    return null;
+  }
+
   return (
     <div className="k-container-right">
-      <div className="component-attribute-operation">
-          {selectData?.key}
-      </div>
-      <div className="component-dom-operation">
-        <KingUi.KButton.type onClick={handleInsertDom}>插入节点</KingUi.KButton.type>
-        <KingUi.KButton.type onClick={handleInsertBrotherDom}>插入兄弟节点</KingUi.KButton.type>
-        <KingUi.KButton.type onClick={handleDeleteDom}>删除节点</KingUi.KButton.type>
-        <KingUi.KButton.type onClick={handleUpDom}>上移节点</KingUi.KButton.type>
-        <KingUi.KButton.type onClick={handleDownDom}>下移节点</KingUi.KButton.type>
-        <KingUi.KButton.type onClick={handleCopyDom}>复制节点</KingUi.KButton.type>
-        <KingUi.KButton.type onClick={handleSearchDom}>查询当前节点</KingUi.KButton.type>
-        <KingUi.KButton.type onClick={handleSearchParentDom}>查询父级节点</KingUi.KButton.type>
-
-          <Popover content="复制">
-              <CopyOutlined className="operation-icon" onClick={handleUpDom}/>
-          </Popover>
-          <Popover content="上移">
-              <ArrowUpOutlined className="operation-icon" onClick={handleUpDom}/>
-          </Popover>
-          <Popover content="下移">
-              <ArrowDownOutlined className="operation-icon" onClick={handleUpDom}/>
-          </Popover>
-      </div>
+      {selectData? <>
+            <div className="component-attribute-operation">
+              {selectData?.key}
+              <Tabs centered>
+                <TabPane key="type" tab="属性">
+                  {renderComponentType()}
+                </TabPane>
+                <TabPane key="style" tab="样式">
+                  {renderComponentStyle()}
+                </TabPane>
+              </Tabs>
+            </div>
+            <div className="component-dom-operation">
+              <Popover content="复制">
+                <CopyOutlined className="operation-icon" onClick={handleCopyDom}/>
+              </Popover>
+              <Popover content="上移">
+                <ArrowUpOutlined className="operation-icon" onClick={handleUpDom}/>
+              </Popover>
+              <Popover content="下移">
+                <ArrowDownOutlined className="operation-icon" onClick={handleDownDom}/>
+              </Popover>
+              <Popover content="删除">
+                <DeleteOutlined className="operation-icon" onClick={handleDeleteDom} />
+              </Popover>
+            </div>
+          </>
+      :<Empty description="请选择一个控件"/>}
 
       {/*{selectData?.key}
       {selectData ? (

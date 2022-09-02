@@ -1,9 +1,9 @@
 import Utils from "../../utils/Utils";
 import "./index.less";
 
-const PreRender = ({custom, ...props}: any) => {
+const PreRender = ({children, custom, ...props}: any) => {
     props = {...custom, ...props};
-    return (<div {...props} className="pre-render-dom">preRender</div>)
+    return (<div {...props} className="pre-render-dom">{children}</div>)
 }
 
 export default {
@@ -11,5 +11,5 @@ export default {
     type: PreRender,
     tag: "PreRender",
     props: {},
-    children: null,
+    children: "preRender",
 };
