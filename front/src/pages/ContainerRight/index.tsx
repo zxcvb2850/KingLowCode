@@ -198,9 +198,15 @@ const ContainerRight = () => {
   const renderComponentType = () => {
       const curCom = searchSelectorDom(selectData!.key);
       if (typeof curCom?.children === "object") {
-
+        return <div className="item-com-lien">
+          <span className="label">组件:</span>
+          <span className="value">{curCom.tag}</span>
+        </div>;
       } else {
-          return <li><span>内容:</span><Input defaultValue={curCom?.children}/></li>;
+          return <div className="item-com-lien">
+            <span className="label">内容:</span>
+            <span className="value"><Input defaultValue={curCom?.children}/></span>
+          </div>;
       }
     return curCom?.children;
   }
