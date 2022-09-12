@@ -1,13 +1,19 @@
-import { useState, ChangeEvent, useEffect, useCallback } from "react";
-import { useRecoilState } from "recoil";
-import loadsh from "lodash";
+import React, {ChangeEvent, useCallback, useEffect, useState} from "react";
+import {useRecoilState} from "recoil";
+import loadsh, {cloneDeep} from "lodash";
 import store from "../../store";
 import "./index.less";
-import { CustomReactPortal } from "../../store/module/home";
+import {CustomReactPortal} from "../../store/module/home";
 import Utils from "../../utils/Utils";
 import useChangeComponent from "../../hooks/useChangeComponent";
-import {ArrowDownOutlined, ArrowUpOutlined, CopyOutlined, DeleteOutlined, StepBackwardOutlined, StepForwardOutlined } from "@ant-design/icons";
-import React from "react";
+import {
+  ArrowDownOutlined,
+  ArrowUpOutlined,
+  CopyOutlined,
+  DeleteOutlined,
+  StepBackwardOutlined,
+  StepForwardOutlined
+} from "@ant-design/icons";
 import CreateDom from "../../utils/CreateDom";
 import useUpdateSelectDomInfo from "../../hooks/useUpdateSelectDomInfo";
 import {Empty, Input, Modal, Popover, Tabs} from "antd";
@@ -211,9 +217,35 @@ const ContainerRight = () => {
     return curCom?.children;
   }
 
+  const changePropsValue = (e:ChangeEvent<HTMLInputElement>, key: string) => {
+    console.log(e.target.value, key);
+    const copySelectData = cloneDeep(selectData);
+    const {value} = e.target;
+    if (isNaN(Number(value))) {
+
+    } else {
+      copySelectData!.props[key] = `${value}px`;
+
+      console.info("copySelectData", copySelectData);
+    }
+  }
+
   // 样式相关
   const renderComponentStyle = () => {
-    return null;
+    return <ul className="style-line-warp">
+      <li className="item-com-line">
+        <span className="label">宽度:</span>
+        <span className="value">
+          <Input value={selectData?.props?.width || "initial"} placeholder="请输入宽度" onChange={(event) => changePropsValue(event, "width")}/>
+        </span>
+      </li>
+      <li className="item-com-line">
+        <span className="label">高度:</span>
+        <span className="value">
+          <Input value={selectData?.props?.height || "initial"} placeholder="请输入高度"/>
+        </span>
+      </li>
+    </ul>;
   }
 
   return (
