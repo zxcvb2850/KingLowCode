@@ -53,7 +53,7 @@ const ContainerRight = () => {
   };
   // 提交修改内容
   const changeValue = useCallback(
-    loadsh.debounce((value: string) => {
+    /*loadsh.debounce((value: string) => {
       if (selectData) {
         const doms = changeUpdateSelectorDom(selectData.key,{children: value});
         setSelectorDomData(doms);
@@ -63,7 +63,18 @@ const ContainerRight = () => {
           updateSelectDomInfo(selectData.key);
         }, 30);
       }
-    }, 300),
+    }, 300)*/
+      (value: string) => {
+        if (selectData) {
+          const doms = changeUpdateSelectorDom(selectData.key,{children: value});
+          setSelectorDomData(doms);
+
+          // 更新选中的组件，由于更新异步执行，所以添加延迟对象
+          setTimeout(() => {
+            updateSelectDomInfo(selectData.key);
+          }, 30);
+        }
+      },
     [selectData]
   );
 
@@ -152,6 +163,13 @@ const ContainerRight = () => {
     if (!selectData) return;
     const copyDom = loadsh.cloneDeep(selectData);
     copyDom.key = Utils.uuid();
+
+    // todo 需要遍历字内容，需要重新设置 key
+    if (Array.isArray(copyDom.children)) {
+      copyDom.children.forEach(n => {
+        n.key = Utils.uuid();
+      })
+    }
     const newDom = insertBrotherSelectorDom(selectData.key, copyDom);
     setSelectorDomData(newDom);
 
@@ -211,7 +229,7 @@ const ContainerRight = () => {
       } else {
           return <div className="item-com-lien">
             <span className="label">内容:</span>
-            <span className="value"><Input defaultValue={curCom?.children}/></span>
+            <span className="value"><Input value={curCom?.children} onChange={changeValueContent}/></span>
           </div>;
       }
     return curCom?.children;
